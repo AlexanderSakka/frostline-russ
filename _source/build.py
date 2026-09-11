@@ -9,8 +9,9 @@ def dims(base):
     im=Image.open(f'{SITE}/img/{base}-m.webp'); return im.size
 data=[]
 for g in groups:
-    p=posts[g['n']]
-    files=[i['file'][:-4] for i in p['images'] if i['ok']]
+    files=[]
+    for n in [g['n']]+g.get('also',[]):
+        files+=[i['file'][:-4] for i in posts[n]['images'] if i['ok']]
     order=[g['cover']]+[f for f in files if f!=g['cover'] and f!=HERO]
     imgs=[]
     for f in order:
@@ -21,7 +22,6 @@ E=html.escape
 cards=[]
 for gi,g in enumerate(data):
     cov=g['imgs'][0]; extras=g['imgs'][1:]
-    wide=' wide' if gi%3==1 else ''
     alt=E(f"Russegruppa {g['name']} i klær fra Frostline")
     handle=''
     eager='' if gi>1 else ' fetchpriority="high"'
@@ -35,7 +35,7 @@ for gi,g in enumerate(data):
             t.append(f'<button class="thumb" type="button" data-g="{gi}" data-i="{k+1}" aria-label="Bilde {k+2} av {len(g["imgs"])}, {E(g["name"])}"><img src="img/{im["b"]}-m.webp" width="{im["w"]}" height="{im["h"]}" alt="" loading="lazy" decoding="async">{plus}</button>')
         thumbs=f'<div class="thumbs">{"".join(t)}</div>'
     cards.append(f'''<article class="card">
-<button class="cover{wide}" type="button" data-g="{gi}" data-i="0" aria-label="Åpne bilder av {E(g['name'])}">
+<button class="cover" type="button" data-g="{gi}" data-i="0" aria-label="Åpne bilder av {E(g['name'])}">
 <img src="img/{cov['b']}-m.webp" width="{cov['w']}" height="{cov['h']}" alt="{alt}"{lazy}{eager} decoding="async">
 <span class="label"><span class="name">{E(g['name'])}</span>{handle}</span>
 </button>{thumbs}</article>''')
