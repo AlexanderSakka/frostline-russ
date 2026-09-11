@@ -33,4 +33,6 @@
     if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.3){dx<0?next():prev();}
     else if(dy>90&&Math.abs(dy)>Math.abs(dx)*1.3){close();}
   },{passive:true});
+  var m=/^#g(\d+)-(\d+)$/.exec(location.hash);
+  if(m&&data[+m[1]]&&data[+m[1]].imgs[+m[2]])open(+m[1],+m[2]);
 })();
