@@ -45,12 +45,11 @@ page=f'''<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Russegrupper | Frostline</title>
-<meta name="description" content="Se russegruppene Frostline har levert gruppeklær til: hoodies, gensere, bukser og t-skjorter med gruppas eget design.">
+<title>Frostline</title>
+<meta name="description" content="Frostline @frostlineno">
 <link rel="canonical" href="https://russ.frostlinenorge.no/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Russegrupper Frostline har kledd opp">
-<meta property="og:description" content="{n_groups} russegrupper, {n_imgs} bilder. Gruppeklær med eget design fra Frostline.">
+<meta property="og:title" content="Frostline">
 <meta property="og:image" content="https://russ.frostlinenorge.no/img/{HERO}-l.webp">
 <meta property="og:url" content="https://russ.frostlinenorge.no/">
 <meta property="og:locale" content="nb_NO">
@@ -72,7 +71,7 @@ page=f'''<!DOCTYPE html>
 <img src="img/{HERO}-l.webp" width="{hw}" height="{hh}" alt="Fly med banner: Frostline x Daskeladden" fetchpriority="high" decoding="async">
 </section>
 
-<h1 class="sr">Russegrupper Frostline har levert til</h1>
+<h1 class="sr">Frostline</h1>
 <main class="grid" id="grupper">
 {"".join(cards)}
 </main>
