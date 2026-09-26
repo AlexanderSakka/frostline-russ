@@ -1,6 +1,16 @@
 (function(){
   var D=JSON.parse(document.getElementById('data').textContent);
 
+  /* the Frostline logo first: the photo wall and the groups' logos (data-src) start once it is in */
+  var later=document.querySelectorAll('img[data-src]'),logo=document.querySelector('.hero-logo img');
+  function fill(){
+    later.forEach(function(im){
+      im.addEventListener('load',function(){im.classList.add('in');});
+      im.src=im.getAttribute('data-src');im.removeAttribute('data-src');
+    });
+  }
+  if(later.length){if(!logo||logo.complete)fill();else{logo.addEventListener('load',fill);logo.addEventListener('error',fill);}}
+
   /* photo rows: arrows on wide screens, swipe everywhere */
   document.querySelectorAll('.worn').forEach(function(w){
     var rail=w.querySelector('.rail'),a=w.querySelectorAll('.arr');

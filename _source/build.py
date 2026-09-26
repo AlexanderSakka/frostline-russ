@@ -345,13 +345,15 @@ def panel_name(name):
 
 def logo_ticker():
     """The groups' chest logos running under the hero, twice over so the loop has no seam.
-    Each opens that group's photos."""
+    Each opens that group's photos. Like the photo wall behind the logo they carry data-src,
+    not src: app.js starts them once the Frostline logo is in, so a slow phone gets the logo
+    first instead of sharing the line with 27 other pictures."""
     def items(copy):
         extra = ' tabindex="-1"' if copy else ''
         return ''.join(
             f'<li><button class="lg" type="button" data-s="g{l["gi"]}" data-i="0" aria-label="{E(l["name"])}"{extra}>'
-            f'<img src="{l["f"]}?v={version(l["f"])}" alt="" width="{l["w"]}" height="{l["h"]}" '
-            f'style="--f:{l["h"] / 128:.3f}" fetchpriority="low" decoding="async"></button></li>'
+            f'<img data-src="{l["f"]}?v={version(l["f"])}" alt="" width="{l["w"]}" height="{l["h"]}" '
+            f'style="--f:{l["h"] / 128:.3f}" decoding="async"></button></li>'
             for l in LOGOS)
     return (f'<div class="logos" role="region" aria-label="Russegrupper i Frostline">'
             f'<div class="logos-track"><ul>{items(False)}</ul><ul aria-hidden="true">{items(True)}</ul></div></div>')
@@ -424,7 +426,7 @@ def body_b():
                      for d in (-1, 1))
     return f'''<main>
 <section class="hero hero-b" id="top">
-<img class="hero-bg" src="assets/mosaic.jpg" alt="" width="{mw}" height="{mh}" fetchpriority="low" decoding="async">
+<img class="hero-bg" data-src="assets/mosaic.jpg?v={version('assets/mosaic.jpg')}" alt="" width="{mw}" height="{mh}" decoding="async">
 <div class="hero-in">
 {logo_h1()}
 </div>
