@@ -15,13 +15,12 @@ index.html is the site. The styles listed in site.json "published" are also writ
 those carry noindex and point canonical at the front page. preview-a/b/c.html are the
 same for local use only (gitignored).
 """
-import json, os, sys, html, hashlib, datetime
+import json, os, re, sys, html, hashlib, datetime
 from PIL import Image, ImageOps
 
 S = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.dirname(S)
 E = html.escape
-URL = 'https://russ.frostlinenorge.no/'
 IG = 'https://www.instagram.com/frostlineno/'
 DM = 'https://ig.me/m/frostlineno'
 STYLES = ('a', 'b', 'c')
@@ -33,6 +32,12 @@ if '--live' in sys.argv:
     if site['live'] not in STYLES:
         sys.exit(f'--live takes one of {STYLES}')
     json.dump(site, open(site_path, 'w'), indent=1)
+
+# the domain this site is served on (also written to CNAME), and the skoleklær store's address;
+# with "forward" set, any path this site does not have goes on to that address (404.html),
+# so links to the store made while it lived on this domain keep working
+URL = f"https://{site.get('domain', 'russ.frostlinenorge.no')}/"
+SKOLE = site.get('skole', 'https://frostlinenorge.no/')
 
 posts = {p['n']: p for p in json.load(open(f'{S}/posts.json'))}
 groups = json.load(open(f'{S}/groups.json'))
@@ -89,17 +94,29 @@ for i, c in enumerate(CUSTOM):
 
 TITLE = 'Frostline'
 DESC = ('Frostline lager russeklær for russegrupper: zip hoodie, hoodie, crewneck, bukse, shorts, '
-        't-skjorte, longsleeve, singlet og collegejakke med gruppas eget trykk. Kontakt oss på Instagram.')
+        't-skjorte, longsleeve, singlet og collegejakke med gruppas eget trykk. Kontakt oss på Instagram @frostlineno.')
+# who Frostline is, for search engines only (nothing of this shows on the page): the name
+# people search for, what the company makes, the Instagram account and the school store
+# that belong to it
 LD = {
     '@context': 'https://schema.org',
     '@graph': [
-        {'@type': 'Organization', '@id': URL + '#org', 'name': 'Frostline', 'legalName': 'Frostec AS',
-         'url': URL, 'logo': URL + 'assets/frostline-logo.png',
-         'sameAs': [IG, 'https://frostlinenorge.no/'],
+        {'@type': 'Organization', '@id': URL + '#org', 'name': 'Frostline', 'alternateName': 'Frostline Norge',
+         'legalName': 'Frostec AS', 'url': URL,
+         'logo': {'@type': 'ImageObject', 'url': URL + 'assets/frostline-logo.png', 'width': 992, 'height': 142},
+         'image': URL + 'assets/og.jpg',
+         'description': 'Frostline lager russeklær og skoleklær med gruppas eget trykk: zip hoodie, hoodie, '
+                        'crewneck, bukse, shorts, t-skjorte, longsleeve, singlet og collegejakke.',
+         'areaServed': {'@type': 'Country', 'name': 'Norge'},
+         'knowsAbout': ['Russeklær', 'Russegrupper', 'Skoleklær', 'Klær med eget trykk'],
+         'sameAs': [IG, SKOLE],
          'contactPoint': {'@type': 'ContactPoint', 'contactType': 'customer service', 'url': IG,
                           'availableLanguage': 'Norwegian'}},
-        {'@type': 'WebSite', '@id': URL + '#site', 'url': URL, 'name': 'Frostline', 'inLanguage': 'nb-NO',
-         'publisher': {'@id': URL + '#org'}},
+        {'@type': 'WebSite', '@id': URL + '#site', 'url': URL, 'name': 'Frostline',
+         'alternateName': 'Frostline Norge', 'inLanguage': 'nb-NO', 'publisher': {'@id': URL + '#org'}},
+        {'@type': 'WebPage', '@id': URL + '#page', 'url': URL, 'name': 'Frostline', 'inLanguage': 'nb-NO',
+         'isPartOf': {'@id': URL + '#site'}, 'about': {'@id': URL + '#org'},
+         'primaryImageOfPage': {'@type': 'ImageObject', 'url': URL + 'assets/og.jpg', 'width': 1200, 'height': 630}},
     ],
 }
 
@@ -212,8 +229,8 @@ def head(style, preview):
 <meta property="og:locale" content="nb_NO">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#09090b">
-<link rel="icon" href="assets/favicon.png" type="image/png">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="icon" href="assets/favicon.png?v={version('assets/favicon.png')}" type="image/png" sizes="96x96">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v={version('assets/apple-touch-icon.png')}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,700;9..40,800&family=Graduate&display=swap" rel="stylesheet">
@@ -281,7 +298,7 @@ def body_a():
 </section>
 <section class="catalog" id="produkter" aria-labelledby="p-h">
 <div class="wrap">
-<h2 class="sr" id="p-h">Plaggene</h2>
+<h2 class="sr" id="p-h">Russeklær</h2>
 <ul class="pgrid">{tiles}</ul>
 </div>
 </section>
@@ -413,7 +430,7 @@ def body_b():
 {logo_ticker()}
 </section>
 <section class="shop" id="produkter" aria-labelledby="p-h">
-<h2 class="sr" id="p-h">Plaggene</h2>
+<h2 class="sr" id="p-h">Russeklær</h2>
 <div class="car" data-car>
 <div class="car-head"><nav class="car-tabs" aria-label="Plaggene">{tabs}</nav><div class="car-arrows">{arrows}</div></div>
 <div class="car-track" tabindex="0" aria-label="Plaggene, sveip for neste">
@@ -460,7 +477,7 @@ def body_c():
 </section>
 <section class="index" id="produkter" aria-labelledby="i-h">
 <div class="wrap">
-<h2 class="sr" id="i-h">Plaggene</h2>
+<h2 class="sr" id="i-h">Russeklær</h2>
 <div class="rows">{''.join(rows)}</div>
 </div>
 </section>
@@ -500,10 +517,40 @@ live = page(site['live'])
 open(f'{SITE}/index.html', 'w').write(live)
 
 today = datetime.date.today().isoformat()
+# the front page and every picture on it that says what it shows (the photos of groups in
+# their garments, the model photos), so image search can find them too
+pics = []
+for src in re.findall(r'<img[^>]*?\ssrc="([^"]+)"[^>]*?\salt="([^"]+)"', live):
+    if not src[0].startswith('assets/') and src[0] not in pics:
+        pics.append(src[0])
+images = ''.join(f'<image:image><image:loc>{E(URL + s)}</image:loc></image:image>' for s in pics)
 open(f'{SITE}/sitemap.xml', 'w').write(
-    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    f'<url><loc>{URL}</loc><lastmod>{today}</lastmod></url>\n</urlset>\n')
+    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+    'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
+    f'<url><loc>{URL}</loc><lastmod>{today}</lastmod>{images}</url>\n</urlset>\n')
 open(f'{SITE}/robots.txt', 'w').write(f'User-agent: *\nAllow: /\nDisallow: /_source/\nDisallow: /preview-\nSitemap: {URL}sitemap.xml\n')
+open(f'{SITE}/CNAME', 'w').write(URL.split('/')[2] + '\n')
+
+# a path this site does not have: on to the school store at the same path (its old links, its
+# /<school> short links), or GitHub's own 404 page when there is nowhere to send it
+if site.get('forward'):
+    to = SKOLE.rstrip('/')
+    open(f'{SITE}/404.html', 'w').write(f'''<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Frostline</title>
+<script>location.replace({json.dumps(to)}+location.pathname+location.search+location.hash)</script>
+</head>
+<body style="margin:0;padding:32px 16px;background:#09090b;font:600 16px/1.5 system-ui,sans-serif">
+<a href="{E(SKOLE)}" style="color:#fff">{E(SKOLE.split('/')[2])}</a>
+</body>
+</html>
+''')
+elif os.path.exists(f'{SITE}/404.html'):
+    os.remove(f'{SITE}/404.html')
 
 n_imgs = sum(len(g['imgs']) for g in GROUPS)
 print(f"live style {site['live']}, garments {len(PRODUCTS)}, groups {N_GROUPS}, group photos {n_imgs}, "

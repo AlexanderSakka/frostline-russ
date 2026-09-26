@@ -1,4 +1,10 @@
 {
  "live": "b",
- "published": ["a", "b"]
+ "published": [
+  "a",
+  "b"
+ ],
+ "domain": "russ.frostlinenorge.no",
+ "skole": "https://frostlinenorge.no/",
+ "forward": false
 }

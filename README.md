@@ -5,7 +5,7 @@ hoodie, crewneck, collegejakke, bukse, shorts, t-skjorte, longsleeve, singlet, p
 each on a model and then on the groups that wear it, then the groups themselves. No shop,
 no email and almost no text on purpose; the only way in is a DM to @frostlineno.
 
-Hosted on GitHub Pages from `main`; `CNAME` pins the custom domain. `index.html` is
+Hosted on GitHub Pages from `main`; `CNAME` pins the custom domain (written by the build from `site.json`). `index.html` is
 generated, never edit it by hand.
 
 ## Files
@@ -79,5 +79,31 @@ python3 -m http.server 8765         # then open http://localhost:8765/preview-a.
   skole shots): hoodie and zip hoodie are the skole shots with russ-length cords, plus
   collegejakke, shorts, singlet and pannebånd. `--dry-run` prints the prompts, `--only a,b`
   redoes some. Then `python3 _source/make_product_images.py` and `build.py`.
+- **Icons**: `python3 _source/make_icons.py` makes the favicon (the wordmark's F, which
+  Google shows beside the site name) and the home-screen icon.
 
 Commit and push; Pages redeploys in about a minute.
+
+## Search engines
+
+The page says almost nothing on purpose, so search engines are told who Frostline is in
+places visitors do not see: the meta description, JSON-LD in the head (Organization
+"Frostline", also "Frostline Norge", Frostec AS, the Instagram account and the skoleklær
+store as `sameAs`, plus WebSite and WebPage), the hidden section headings ("Russeklær",
+"Russegruppene") and the photos' alt texts ("Russegruppa X i zip hoodie fra Frostline").
+`sitemap.xml` lists the front page and every described photo on it; `robots.txt` points to it.
+The `<title>` and `og:title` stay the bare name.
+
+`_source/site.json` holds the addresses: `"domain"` (written to `CNAME` and used for
+canonical, og and sitemap URLs), `"skole"` (the skoleklær store) and `"forward"`. With
+`"forward": true` the build writes a `404.html` that sends any path this site does not
+have on to the skoleklær store at the same path; that is for the day this site takes over
+frostlinenorge.no and the store moves to a subdomain, so its old links and `/<school>`
+short links keep working.
+
+Bing, Yandex and the other IndexNow engines are told about a change with
+`curl "https://api.indexnow.org/indexnow?url=https://<domain>/&key=7aa21beeb74799d3de6a9380911714d5"`; the key file is
+`7aa21beeb74799d3de6a9380911714d5.txt` at the root.
+
+Search Console: not set up yet (2026-09-26). A Domain property for frostlinenorge.no,
+verified with a TXT record at Domene.no, covers the apex and every subdomain.
