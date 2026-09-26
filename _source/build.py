@@ -5,12 +5,14 @@
 
 Three styles share the same data, images, style.css and app.js:
   a  Lookbook   the logo, then every garment as a tile that turns into a group wearing it
-  b  Kampanje   a wall of group photos behind the logo, the garments as one big swipeable strip
+  b  Kampanje   a wall of group photos behind the logo, then a full photo panel per garment
   c  Indeks     a black index you open garment by garment, the groups as a name list
 
 Each garment opens a lightbox: its model photo(s) first, then the groups wearing it.
-preview-a.html, preview-b.html and preview-c.html are for choosing locally; they are
-gitignored and carry noindex. Only index.html is the site.
+index.html is the site. The styles listed in site.json "published" are also written as
+<style>.html (russ.frostlinenorge.no/a, /b) so they can be compared on the real domain;
+those carry noindex and point canonical at the front page. preview-a/b/c.html are the
+same for local use only (gitignored).
 """
 import json, os, sys, html, hashlib, datetime
 from PIL import Image, ImageOps
@@ -288,17 +290,55 @@ def mosaic():
     return wall.size
 
 
+# Where a long name may break when its half of a phone screen is too narrow for it.
+SOFT = {'crewneck': 'Crew­neck', 'longsleeve': 'Long­sleeve', 'collegejakke': 'College­jakke'}
+
+
+def panel_name(name):
+    """The outlined name, sized by CSS from its longest word (--n, wide screens) or its
+    longest breakable part (--ns, phones). A hard hyphen never breaks (T-skjorte)."""
+    shown, n, ns = [], 0, 0
+    for w in name.split():
+        n = max(n, len(w))
+        parts = SOFT.get(w.lower(), w).split('­')
+        ns = max([ns] + [len(x) + (k < len(parts) - 1) for k, x in enumerate(parts)])
+        s = '&shy;'.join(E(x) for x in parts)
+        shown.append(f'<span class="w">{s}</span>' if '-' in w else s)
+    return f'<h3 class="panel-name" style="--n:{n};--ns:{ns}">{" ".join(shown)}</h3>'
+
+
 def body_b():
+    """One full panel per garment, alternating sides: a big photo of a group wearing it,
+    and the outlined name with the model photo(s). A garment no group has been
+    photographed in yet shows its model photo big instead."""
     mw, mh = mosaic()
-    sizes = '(min-width: 1100px) 30vw, (min-width: 640px) 44vw, 78vw'
-    slides = ''.join(
-        f'<article class="slide" id="{p["id"]}">'
-        f'<button class="slide-photo shot" type="button" data-s="p{pi}" data-i="0" aria-label="{E(open_label(p))}">'
-        f'{model_img(p, 0, sizes)}{second_look(p, sizes)}{count(p)}</button>'
-        f'<p class="p-num">{pi + 1:02d}<span> / {len(PRODUCTS):02d}</span></p>'
-        f'<h3 class="slide-name">{E(p["name"])}</h3></article>'
-        for pi, p in enumerate(PRODUCTS))
-    arrows = ''.join(f'<button class="arr" type="button" data-dir="{d}" aria-label="{"Forrige" if d < 0 else "Neste"} plagg">{CHEV[d]}</button>' for d in (-1, 1))
+    panels = []
+    for pi, p in enumerate(PRODUCTS):
+        big_sizes = '(min-width: 900px) 50vw, 100vw'
+        if p['worn_imgs']:
+            feat = p['worn_imgs'][0]
+            first = len(p['photos'])  # the lightbox shows the model photos first
+            big = (photo(feat['b'], f"Russegruppa {feat['g']} i {p['lname']} fra Frostline", big_sizes, large=True)
+                   + f'<span class="panel-credit">{E(feat["g"])}</span>')
+            card = list(range(len(p['photos'])))
+        else:
+            first = 0
+            big = model_img(p, 0, big_sizes)
+            card = list(range(1, len(p['photos'])))
+        models = ''.join(
+            f'<button class="model" type="button" data-s="p{pi}" data-i="{k}" aria-label="{E(model_alt(p, p["photos"][k][1]))}">'
+            f'{model_img(p, k, "(min-width: 900px) 210px, 45vw" if len(card) > 1 else "(min-width: 900px) 420px, 90vw")}</button>'
+            for k in card)
+        panels.append(f'''<article class="panel{' flip' if pi % 2 else ''}" id="{p['id']}">
+<button class="panel-photo" type="button" data-s="p{pi}" data-i="{first}" aria-label="{E(open_label(p))}">
+{big}{count(p)}
+</button>
+<div class="panel-body">
+<p class="p-num">{pi + 1:02d}<span> / {len(PRODUCTS):02d}</span></p>
+{panel_name(p['name'])}
+{f'<div class="panel-models">{models}</div>' if models else ''}
+</div>
+</article>''')
     return f'''<main>
 <section class="hero hero-b" id="top">
 <img class="hero-bg" src="assets/mosaic.jpg" alt="" width="{mw}" height="{mh}" fetchpriority="high">
@@ -307,10 +347,9 @@ def body_b():
 </div>
 <a class="scroll-cue" href="#produkter" aria-label="Til plaggene"><span></span></a>
 </section>
-<section class="strip-sec worn" id="produkter" aria-labelledby="p-h">
+<section class="panels" id="produkter" aria-labelledby="p-h">
 <h2 class="sr" id="p-h">Plaggene</h2>
-<div class="wrap strip-head"><div class="arrows">{arrows}</div></div>
-<div class="rail strip">{slides}</div>
+{''.join(panels)}
 </section>
 {marquee()}
 <section class="groups-b" id="grupper" aria-labelledby="g-h">
@@ -382,6 +421,12 @@ def page(style, preview=False):
 
 for s in STYLES:
     open(f'{SITE}/preview-{s}.html', 'w').write(page(s, preview=True))
+published = site.get('published', [])
+for s in STYLES:
+    if s in published:
+        open(f'{SITE}/{s}.html', 'w').write(page(s, preview=True))
+    elif os.path.exists(f'{SITE}/{s}.html'):
+        os.remove(f'{SITE}/{s}.html')
 live = page(site['live'])
 open(f'{SITE}/index.html', 'w').write(live)
 

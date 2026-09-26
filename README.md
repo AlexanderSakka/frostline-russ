@@ -22,13 +22,16 @@ generated, never edit it by hand.
 
 ## The three styles
 
-`_source/site.json` says which one is live. All three are built every time as
-`preview-a.html`, `preview-b.html`, `preview-c.html` (gitignored, noindex):
+`_source/site.json` says which one is live (`"live"`) and which are also published on the
+domain for comparison (`"published"`, written as `a.html` and `b.html`, so
+russ.frostlinenorge.no/a and /b; noindex, canonical to the front page). All three are also
+built as `preview-a.html`, `preview-b.html`, `preview-c.html` for local use (gitignored):
 
 - **a, Lookbook**: the logo, then every garment as a tile; hovering a tile turns the model
   photo into a group wearing it. Then the name ticker and the groups in black and white.
-- **b, Kampanje**: a wall of the groups behind the logo, the garments as a big swipeable
-  strip with outlined varsity names, then the groups edge to edge.
+- **b, Kampanje**: a wall of the groups behind the logo, then a panel per garment: a group
+  wearing it on one half, the outlined varsity name and the model photo on the other,
+  alternating sides and side by side on phones too; then the groups edge to edge.
 - **c, Indeks**: black and closed, the garments as an index you open one by one, the groups
   as a name list whose photo follows the pointer.
 
