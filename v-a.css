@@ -1,0 +1,27 @@
+/* a: Lookbook. The logo over the four garments, a studio per garment, the name ticker,
+   then the groups in black and white. */
+.hero{position:relative;overflow:hidden;padding:clamp(64px,11vw,132px) 16px 0;text-align:center}
+.hero::before{content:"";position:absolute;left:50%;top:0;width:1400px;height:900px;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(255,255,255,.1),rgba(255,255,255,0));pointer-events:none}
+.lineup{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:end;gap:clamp(6px,2.6vw,40px);max-width:1040px;margin:clamp(48px,8vw,96px) auto 0;padding-bottom:clamp(40px,6vw,72px)}
+.lineup a{display:flex;flex-direction:column;align-items:center;gap:12px;text-decoration:none;color:var(--soft);font-size:clamp(11px,1.5vw,15px);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.lineup img{width:auto;max-width:100%;height:clamp(96px,22vw,270px);object-fit:contain;filter:drop-shadow(0 24px 30px rgba(0,0,0,.55));transition:transform .35s ease}
+.lineup a:hover{color:#fff}
+.lineup a:hover img{transform:translateY(-6px)}
+
+.products{padding:clamp(24px,4vw,48px) 0 clamp(24px,4vw,48px);border-top:1px solid var(--line)}
+.product{display:grid;gap:22px;padding:clamp(40px,6vw,80px) 0;border-top:1px solid var(--line)}
+.product:first-of-type{border-top:0}
+@media(min-width:960px){
+  .product{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-areas:"media info" "worn worn";gap:40px 64px;align-items:center}
+  .product.flip{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-areas:"info media" "worn worn"}
+  .p-media{grid-area:media}.p-info{grid-area:info}.product .worn{grid-area:worn}
+}
+.p-name{margin:0;font-size:clamp(52px,8.6vw,124px);line-height:.9;font-weight:800;letter-spacing:-.05em}
+
+.groups{padding:clamp(40px,6vw,72px) 0 clamp(72px,10vw,130px);background:var(--bg2)}
+.ggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;padding:0;list-style:none}
+@media(min-width:720px){.ggrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}}
+@media(min-width:1080px){.ggrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.gcard{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;background:var(--card)}
+.gcard img{width:100%;height:100%;object-fit:cover}
+@media(hover:hover){.gcard:hover img{transform:scale(1.04)}}

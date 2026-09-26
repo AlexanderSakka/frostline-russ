@@ -1,0 +1,34 @@
+{
+ "_note": "The four garments, in page order. 'img' is [file prefix in img/p/, cut label] per cut, written by make_product_images.py; grey and navy are the colours on the supply orders. 'worn' lists the Instagram photos (post-slide) that show this garment, best first.",
+ "colors": [["graa", "Grå", "#d6d6da"], ["navy", "Navy", "#2b2e48"]],
+ "products": [
+  {
+   "id": "zip-hoodie",
+   "name": "Zip hoodie",
+   "lname": "zip hoodie",
+   "img": [["zip-hoodie", ""]],
+   "worn": ["03-3", "13-1", "09-1", "20-4", "16-3", "18-3", "19-5", "11-1", "23-3", "07-4"]
+  },
+  {
+   "id": "hoodie",
+   "name": "Hoodie",
+   "lname": "hoodie",
+   "img": [["hoodie", ""]],
+   "worn": ["18-4", "19-6", "15-1", "14-1", "22-3", "08-3", "03-4", "01-1", "09-3", "13-3", "22-1"]
+  },
+  {
+   "id": "crewneck",
+   "name": "Crewneck",
+   "lname": "crewneck",
+   "img": [["crewneck", ""]],
+   "worn": ["21-2", "21-4", "21-3", "27-2", "21-1", "23-1"]
+  },
+  {
+   "id": "bukse",
+   "name": "Bukse",
+   "lname": "bukse",
+   "img": [["bukse-unisex", "Unisex"], ["bukse-dame", "Dame"]],
+   "worn": ["17-3", "14-3", "23-4", "30-2", "29-2", "30-1", "17-1"]
+  }
+ ]
+}
