@@ -231,6 +231,7 @@ def head(style, preview):
 <meta name="theme-color" content="#09090b">
 <link rel="icon" href="assets/favicon.png?v={version('assets/favicon.png')}" type="image/png" sizes="96x96">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v={version('assets/apple-touch-icon.png')}">
+<link rel="preload" as="image" href="assets/frostline-logo-outline.webp" fetchpriority="high">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,700;9..40,800&family=Graduate&display=swap" rel="stylesheet">
@@ -350,7 +351,7 @@ def logo_ticker():
         return ''.join(
             f'<li><button class="lg" type="button" data-s="g{l["gi"]}" data-i="0" aria-label="{E(l["name"])}"{extra}>'
             f'<img src="{l["f"]}?v={version(l["f"])}" alt="" width="{l["w"]}" height="{l["h"]}" '
-            f'style="--f:{l["h"] / 128:.3f}" decoding="async"></button></li>'
+            f'style="--f:{l["h"] / 128:.3f}" fetchpriority="low" decoding="async"></button></li>'
             for l in LOGOS)
     return (f'<div class="logos" role="region" aria-label="Russegrupper i Frostline">'
             f'<div class="logos-track"><ul>{items(False)}</ul><ul aria-hidden="true">{items(True)}</ul></div></div>')
@@ -423,7 +424,7 @@ def body_b():
                      for d in (-1, 1))
     return f'''<main>
 <section class="hero hero-b" id="top">
-<img class="hero-bg" src="assets/mosaic.jpg" alt="" width="{mw}" height="{mh}" fetchpriority="high">
+<img class="hero-bg" src="assets/mosaic.jpg" alt="" width="{mw}" height="{mh}" fetchpriority="low" decoding="async">
 <div class="hero-in">
 {logo_h1()}
 </div>
