@@ -224,7 +224,6 @@ def head(style, preview):
 <body class="v-{style}">
 <a class="skip" href="#produkter">Hopp til plaggene</a>
 <header class="bar"><div class="bar-in">
-<a class="bar-logo" href="#top" aria-label="Frostline, til toppen"><img src="assets/frostline-logo-white.png" alt="Frostline" width="992" height="142"></a>
 <a class="dm" href="{DM}" target="_blank" rel="noopener" aria-label="Send oss en DM på Instagram">{ICON_IG}<span>DM</span></a>
 </div></header>
 '''
@@ -239,7 +238,6 @@ def tail():
 </main>
 <footer class="foot">
 <img src="assets/frostline-logo-white.png" alt="" width="992" height="142" loading="lazy">
-<p>Frostec AS · Org.nr 930 093 777</p>
 </footer>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Bildevisning">
 <button class="lb-close" type="button" aria-label="Lukk">&times;</button>

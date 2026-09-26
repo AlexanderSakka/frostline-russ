@@ -2,7 +2,7 @@
    underneath; the garments as slides you swipe or pick by name (a group wearing it, the
    outlined name and the model photo, two more groups); the groups edge to edge; the
    custom pieces last. */
-.hero-b{position:relative;display:grid;place-items:center;min-height:min(88svh,880px);padding:72px 0 clamp(120px,17vh,170px);overflow:hidden;text-align:center}
+.hero-b{position:relative;display:grid;place-items:center;min-height:min(100svh,1000px);padding:72px 0 clamp(120px,17vh,170px);overflow:hidden;text-align:center}
 .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;transform:scale(1.04)}
 .hero-b::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 55% at 50% 50%,rgba(9,9,11,.5),rgba(9,9,11,.92) 100%),linear-gradient(180deg,rgba(9,9,11,.3),rgba(9,9,11,.2) 50%,var(--bg) 88%)}
 .hero-in{position:relative;z-index:1;width:100%;padding:0 16px}

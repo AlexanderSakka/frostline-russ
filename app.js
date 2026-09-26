@@ -1,11 +1,6 @@
 (function(){
   var D=JSON.parse(document.getElementById('data').textContent);
 
-  /* top bar gets its hairline once the page moves */
-  var bar=document.querySelector('.bar');
-  function onScroll(){bar.classList.toggle('scrolled',window.scrollY>4);}
-  onScroll();window.addEventListener('scroll',onScroll,{passive:true});
-
   /* photo rows: arrows on wide screens, swipe everywhere */
   document.querySelectorAll('.worn').forEach(function(w){
     var rail=w.querySelector('.rail'),a=w.querySelectorAll('.arr');
