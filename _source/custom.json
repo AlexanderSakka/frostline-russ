@@ -1,0 +1,6 @@
+{
+ "_note": "One-off pieces made for a single group, shown at the bottom of style b. Photos: _source/raw/custom/<file> (gitignored), made into img/c/<name>-{s,m,l}.webp by make_webp.py.",
+ "custom": [
+  {"id": "swag", "group": "Swag", "what": "Custom camo hoodie", "photos": ["swag-1.webp"]}
+ ]
+}

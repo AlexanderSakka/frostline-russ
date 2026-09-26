@@ -16,6 +16,43 @@
     rail._upd=upd;upd();
   });
 
+  /* garments as slides (style b): swipe, the arrows, the arrow keys, or pick one by name;
+     the name of the slide in view lights up */
+  document.querySelectorAll('[data-car]').forEach(function(car){
+    var track=car.querySelector('.car-track'),slides=[].slice.call(track.querySelectorAll('.slide')),
+        tabRow=car.querySelector('.car-tabs'),tabs=[].slice.call(car.querySelectorAll('.car-tab')),
+        arr=car.querySelectorAll('.car-arr'),cur=-1,raf=0;
+    if(!slides.length)return;
+    function padL(){return parseFloat(getComputedStyle(track).scrollPaddingLeft)||0;}
+    function go(k,instant){
+      k=Math.max(0,Math.min(slides.length-1,k));
+      track.scrollTo({left:slides[k].offsetLeft-padL(),behavior:instant?'auto':'smooth'});
+    }
+    function mark(){
+      raf=0;var x=track.scrollLeft+padL(),best=0,bd=Infinity;
+      slides.forEach(function(s,k){var d=Math.abs(s.offsetLeft-x);if(d<bd){bd=d;best=k;}});
+      if(best===cur)return;cur=best;
+      tabs.forEach(function(t,k){t.setAttribute('aria-current',k===cur?'true':'false');});
+      slides.forEach(function(s,k){s.classList.toggle('on',k===cur);});
+      var t=tabs[cur];
+      if(t&&tabRow.scrollWidth>tabRow.clientWidth)tabRow.scrollTo({left:t.offsetLeft-(tabRow.clientWidth-t.offsetWidth)/2,behavior:'smooth'});
+      if(arr.length===2){arr[0].disabled=cur===0;arr[1].disabled=cur===slides.length-1;}
+    }
+    track.addEventListener('scroll',function(){if(!raf)raf=requestAnimationFrame(mark);},{passive:true});
+    window.addEventListener('resize',function(){if(cur>=0)go(cur,true);});
+    tabs.forEach(function(t,k){t.addEventListener('click',function(e){e.preventDefault();go(k);});});
+    arr.forEach(function(b){b.addEventListener('click',function(){go(cur+(+b.getAttribute('data-dir')));});});
+    track.addEventListener('keydown',function(e){
+      if(e.target!==track)return;
+      if(e.key==='ArrowRight'){e.preventDefault();go(cur+1);}else if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+    });
+    function fromHash(){
+      var id=decodeURIComponent(location.hash.slice(1));
+      for(var k=0;k<slides.length;k++)if(slides[k].id===id){go(k,true);car.scrollIntoView({block:'start'});return;}
+    }
+    mark();fromHash();window.addEventListener('hashchange',fromHash);car.classList.add('ready');
+  });
+
   /* index rows (style c): open from a link, and wake the rows inside when opened */
   function openFromHash(){
     var id=decodeURIComponent(location.hash.slice(1)),el=id&&document.getElementById(id);
@@ -58,6 +95,9 @@
     if(im.s){
       lbImg.alt=set.t+' fra Frostline på modell'+(im.c?', '+im.c.toLowerCase():'');
       cap.innerHTML='<b>'+esc(set.t)+'</b>'+(im.c?' · '+esc(im.c):'')+pos;
+    }else if(set.k==='c'){
+      lbImg.alt='Russegruppa '+set.t+' i '+set.w.toLowerCase()+' fra Frostline';
+      cap.innerHTML='<b>'+esc(set.t)+'</b> · '+esc(set.w)+(n>1?pos:'');
     }else{
       var who=im.g||set.t;
       lbImg.alt='Russegruppa '+who+(set.k==='p'?' i '+set.t.toLowerCase():' i klær')+' fra Frostline';

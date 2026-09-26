@@ -5,7 +5,8 @@
 
 Three styles share the same data, images, style.css and app.js:
   a  Lookbook   the logo, then every garment as a tile that turns into a group wearing it
-  b  Kampanje   a wall of group photos behind the logo, then a full photo panel per garment
+  b  Kampanje   a wall of group photos behind the logo with the groups' chest logos running
+                underneath, the garments as slides you swipe or pick by name, the custom pieces
   c  Indeks     a black index you open garment by garment, the groups as a name list
 
 Each garment opens a lightbox: its model photo(s) first, then the groups wearing it.
@@ -59,13 +60,32 @@ for p in PRODUCTS:
     p['worn_imgs'] = [{'b': b, 'w': dims(b)[0], 'h': dims(b)[1], 'g': group_of[b.split('-')[0]]} for b in p['worn']]
 N_GROUPS = len(GROUPS)
 
-# lightbox sets: p<i> is a garment (model photos, then the groups in it), g<i> a group
+# one-off pieces made for a single group (custom.json), photos in img/c/
+CUSTOM = json.load(open(f'{S}/custom.json'))['custom']
+for c in CUSTOM:
+    c['imgs'] = [{'b': 'c/' + f.rsplit('.', 1)[0]} for f in c['photos']]
+    for im in c['imgs']:
+        im['w'], im['h'] = dims(im['b'])
+
+# each group's own chest logo (make_logos.py), in the order of the group photos;
+# a group without one is left out
+LOGOS = []
+for gi, g in enumerate(groups):
+    f = f'img/logo/{g["n"]}.webp'
+    if os.path.exists(f'{SITE}/{f}'):
+        w, h = Image.open(f'{SITE}/{f}').size
+        LOGOS.append({'gi': gi, 'name': g['name'], 'f': f, 'w': w, 'h': h})
+
+# lightbox sets: p<i> is a garment (model photos, then the groups in it), g<i> a group,
+# c<i> a custom piece
 DATA = {'s': {}}
 for i, p in enumerate(PRODUCTS):
     model = [{'s': f'img/p/{pid}-model-1000.webp', 'w': 1000, 'h': 1000, 'c': cut} for pid, cut in p['photos']]  # stamped below
     DATA['s'][f'p{i}'] = {'t': p['name'], 'k': 'p', 'imgs': model + p['worn_imgs']}
 for i, g in enumerate(GROUPS):
     DATA['s'][f'g{i}'] = {'t': g['name'], 'k': 'g', 'imgs': g['imgs']}
+for i, c in enumerate(CUSTOM):
+    DATA['s'][f'c{i}'] = {'t': c['group'], 'k': 'c', 'w': c['what'], 'imgs': c['imgs']}
 
 TITLE = 'Frostline | Russeklær for russegrupper'
 DESC = ('Frostline lager russeklær for russegrupper: zip hoodie, hoodie, crewneck, bukse, shorts, '
@@ -307,56 +327,107 @@ def panel_name(name):
     return f'<h3 class="panel-name" style="--n:{n};--ns:{ns}">{" ".join(shown)}</h3>'
 
 
+def logo_ticker():
+    """The groups' chest logos running under the hero, twice over so the loop has no seam.
+    Each opens that group's photos."""
+    def items(copy):
+        extra = ' tabindex="-1"' if copy else ''
+        return ''.join(
+            f'<li><button class="lg" type="button" data-s="g{l["gi"]}" data-i="0" aria-label="{E(l["name"])}"{extra}>'
+            f'<img src="{l["f"]}?v={version(l["f"])}" alt="" width="{l["w"]}" height="{l["h"]}" '
+            f'style="--f:{l["h"] / 128:.3f}" decoding="async"></button></li>'
+            for l in LOGOS)
+    return (f'<div class="logos" role="region" aria-label="Russegrupper i Frostline">'
+            f'<div class="logos-track"><ul>{items(False)}</ul><ul aria-hidden="true">{items(True)}</ul></div></div>')
+
+
+def credit(name):
+    return f'<span class="credit">{E(name)}</span>'
+
+
+def slide(p, pi):
+    """One garment: a group wearing it, the outlined name and the model photo(s), then two
+    more groups. A garment no group has been photographed in yet leads with its model
+    photo, and its other cut (if any) sits beside the name."""
+    n = len(PRODUCTS)
+    worn = p['worn_imgs']
+    first = len(p['photos'])  # the lightbox shows the model photos first, then the groups
+    if worn:
+        main = (f'<button class="s-main" type="button" data-s="p{pi}" data-i="{first}" aria-label="{E(open_label(p))}">'
+                + photo(worn[0]['b'], f"Russegruppa {worn[0]['g']} i {p['lname']} fra Frostline",
+                        '(min-width: 900px) 520px, 46vw', large=True)
+                + credit(worn[0]['g']) + count(p) + '</button>')
+        cuts = list(range(len(p['photos'])))
+    else:
+        main = (f'<button class="s-main" type="button" data-s="p{pi}" data-i="0" aria-label="{E(open_label(p))}">'
+                + model_img(p, 0, '(min-width: 900px) 700px, 90vw') + count(p) + '</button>')
+        cuts = list(range(1, len(p['photos'])))
+    models = ''.join(
+        f'<button class="model" type="button" data-s="p{pi}" data-i="{k}" aria-label="{E(model_alt(p, p["photos"][k][1]))}">'
+        + model_img(p, k, '(min-width: 900px) 180px, 20vw' if len(cuts) > 1 or not worn else '(min-width: 900px) 340px, 40vw')
+        + '</button>'
+        for k in cuts)
+    more = ''.join(
+        f'<button class="s-g" type="button" data-s="p{pi}" data-i="{first + k}" aria-label="{E(im["g"])}, bilde {first + k + 1}">'
+        + photo(im['b'], f"Russegruppa {im['g']} i {p['lname']} fra Frostline", '(min-width: 900px) 320px, 46vw')
+        + credit(im['g']) + '</button>'
+        for k, im in list(enumerate(worn))[1:3])
+    return f'''<article class="slide{'' if worn else ' bare'}" id="{p['id']}" aria-label="{pi + 1} av {n}: {E(p['name'])}">
+{main}
+<div class="s-body"><div class="s-title"><p class="p-num">{pi + 1:02d}<span> / {n:02d}</span></p>
+{panel_name(p['name'])}</div>{f'<div class="s-models">{models}</div>' if models else ''}</div>
+{more}
+</article>'''
+
+
+def custom_b():
+    """The one-off pieces, big, at the bottom."""
+    if not CUSTOM:
+        return ''
+    items = ''.join(
+        f'<li><button class="cust" type="button" data-s="c{ci}" data-i="0" aria-label="{E(c["group"])}: {E(c["what"])}">'
+        + photo(c['imgs'][0]['b'], f"Russegruppa {c['group']} i {c['what'].lower()} fra Frostline",
+                '(min-width: 1240px) 1180px, 94vw' if len(CUSTOM) == 1 else '(min-width: 720px) 48vw, 94vw', large=True)
+        + credit(c['group']) + '</button></li>'
+        for ci, c in enumerate(CUSTOM))
+    return f'''<section class="custom" id="custom" aria-labelledby="c-h">
+<h2 class="custom-h" id="c-h">Custom</h2>
+<ul class="cust-grid{' one' if len(CUSTOM) == 1 else ''}">{items}</ul>
+</section>
+'''
+
+
 def body_b():
-    """One full panel per garment, alternating sides: a big photo of a group wearing it,
-    and the outlined name with the model photo(s). A garment no group has been
-    photographed in yet shows its model photo big instead."""
+    """The logo over a wall of the groups, their chest logos running underneath; the
+    garments as slides you swipe or pick by name; the groups edge to edge; the custom
+    pieces last."""
     mw, mh = mosaic()
-    panels = []
-    for pi, p in enumerate(PRODUCTS):
-        big_sizes = '(min-width: 900px) 50vw, 100vw'
-        if p['worn_imgs']:
-            feat = p['worn_imgs'][0]
-            first = len(p['photos'])  # the lightbox shows the model photos first
-            big = (photo(feat['b'], f"Russegruppa {feat['g']} i {p['lname']} fra Frostline", big_sizes, large=True)
-                   + f'<span class="panel-credit">{E(feat["g"])}</span>')
-            card = list(range(len(p['photos'])))
-        else:
-            first = 0
-            big = model_img(p, 0, big_sizes)
-            card = list(range(1, len(p['photos'])))
-        models = ''.join(
-            f'<button class="model" type="button" data-s="p{pi}" data-i="{k}" aria-label="{E(model_alt(p, p["photos"][k][1]))}">'
-            f'{model_img(p, k, "(min-width: 900px) 210px, 45vw" if len(card) > 1 else "(min-width: 900px) 420px, 90vw")}</button>'
-            for k in card)
-        panels.append(f'''<article class="panel{' flip' if pi % 2 else ''}" id="{p['id']}">
-<button class="panel-photo" type="button" data-s="p{pi}" data-i="{first}" aria-label="{E(open_label(p))}">
-{big}{count(p)}
-</button>
-<div class="panel-body">
-<p class="p-num">{pi + 1:02d}<span> / {len(PRODUCTS):02d}</span></p>
-{panel_name(p['name'])}
-{f'<div class="panel-models">{models}</div>' if models else ''}
-</div>
-</article>''')
+    tabs = ''.join(f'<a class="car-tab" href="#{p["id"]}" aria-current="{"true" if pi == 0 else "false"}">{E(p["name"])}</a>'
+                   for pi, p in enumerate(PRODUCTS))
+    arrows = ''.join(f'<button class="car-arr" type="button" data-dir="{d}" aria-label="{"Forrige" if d < 0 else "Neste"} plagg">{CHEV[d]}</button>'
+                     for d in (-1, 1))
     return f'''<main>
 <section class="hero hero-b" id="top">
 <img class="hero-bg" src="assets/mosaic.jpg" alt="" width="{mw}" height="{mh}" fetchpriority="high">
 <div class="hero-in">
 {logo_h1()}
 </div>
-<a class="scroll-cue" href="#produkter" aria-label="Til plaggene"><span></span></a>
+{logo_ticker()}
 </section>
-<section class="panels" id="produkter" aria-labelledby="p-h">
+<section class="shop" id="produkter" aria-labelledby="p-h">
 <h2 class="sr" id="p-h">Plaggene</h2>
-{''.join(panels)}
+<div class="car" data-car>
+<div class="car-head"><nav class="car-tabs" aria-label="Plaggene">{tabs}</nav><div class="car-arrows">{arrows}</div></div>
+<div class="car-track" tabindex="0" aria-label="Plaggene, sveip for neste">
+{''.join(slide(p, pi) for pi, p in enumerate(PRODUCTS))}
+</div>
+</div>
 </section>
-{marquee()}
 <section class="groups-b" id="grupper" aria-labelledby="g-h">
 <h2 class="sr" id="g-h">Russegruppene</h2>
 <ul class="wall">{group_cards('(min-width: 1280px) 15vw, (min-width: 720px) 25vw, 50vw', 'wcard')}</ul>
 </section>
-'''
+{custom_b()}'''
 
 
 # ---------------------------------------------------------------- c: Indeks

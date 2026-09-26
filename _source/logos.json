@@ -1,0 +1,80 @@
+{
+ "04": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/chiefs_rebuild1/designs/zip_hoodie/front_chest_logo.png"
+ },
+ "22": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/rangers_1775222655664/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "19": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/westside_1774794266923/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "08": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/dukes_1785674627405/designs/zip_hoodie/front_chest_logo.png"
+ },
+ "03": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/Fratelli_1787154161066/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "09": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/mags_1778160239153/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "11": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/fontana_1774713778324/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "16": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/madmax_1774715142126/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "07": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/siberia_1774799357356/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "26": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/czarface_1775215584340/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "05": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/freeworld_1774790771788/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "17": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/ruffneck_1774717318898/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "23": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/childsplay_1774791895681/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "10": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/jem_1785653034102/designs/zip_hoodie/front_chest_logo.png"
+ },
+ "14": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/nattens_s_nner_1774802870910/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "12": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/animality_1775213938555/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "13": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/madlib_1774797651865/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "15": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/slipknot_1774796452187/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "25": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/hundre45_1774094038182/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "18": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/karasjokk_1774716048384/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "06": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/Buckfever_1774704754592/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "24": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/1774745963987/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "01": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/Hefners_1786641947494/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "20": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/evergreen_1774793570209/expansion-variant-logos/zip_hoodie/Grå/front_chest.png"
+ },
+ "28": {
+  "from": "~/Downloads/Filemail.com - Czarface logofiler.zip, Logo 2 (cheest).png (the Nov 2025 order, before the print system)"
+ },
+ "21": {
+  "from": "s3://ftmerch-eu-north-1/orders/10114456682815/normandie_1774800921736/variant-logos/Grå/back_top.png (no zip in that order; the hoodie back wordmark)"
+ }
+}
