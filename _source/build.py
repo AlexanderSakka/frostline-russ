@@ -87,7 +87,7 @@ for i, g in enumerate(GROUPS):
 for i, c in enumerate(CUSTOM):
     DATA['s'][f'c{i}'] = {'t': c['group'], 'k': 'c', 'w': c['what'], 'imgs': c['imgs']}
 
-TITLE = 'Frostline | Russeklær for russegrupper'
+TITLE = 'Frostline'
 DESC = ('Frostline lager russeklær for russegrupper: zip hoodie, hoodie, crewneck, bukse, shorts, '
         't-skjorte, longsleeve, singlet og collegejakke med gruppas eget trykk. Kontakt oss på Instagram.')
 LD = {
