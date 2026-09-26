@@ -1,3 +1,5 @@
 _source/raw/
+_source/model-refs/
+_source/model-photos/
 .DS_Store
 preview-*.html

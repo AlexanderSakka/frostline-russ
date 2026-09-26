@@ -6,46 +6,6 @@
   function onScroll(){bar.classList.toggle('scrolled',window.scrollY>4);}
   onScroll();window.addEventListener('scroll',onScroll,{passive:true});
 
-  /* studio: side, colour and cut for each garment */
-  function colorName(c){for(var k=0;k<D.c.length;k++)if(D.c[k][0]===c)return D.c[k][1];return c;}
-  function studio(root){
-    var P=D.p[+root.getAttribute('data-p')];
-    var stage=root.querySelector('.stage'),ctrl=root.querySelector('.ctrl');
-    if(!P||!stage||!ctrl)return;
-    var img=stage.querySelector('img'),sws=ctrl.querySelector('.swatches');
-    var st={cut:P.cuts[0][0],view:'front',color:D.c[0][0]};
-    function cutLabel(c){for(var k=0;k<P.cuts.length;k++)if(P.cuts[k][0]===c)return P.cuts[k][1];return '';}
-    function file(s){return 'img/p/'+s.cut+'-'+(s.view==='life'?'life':s.color+'-'+s.view);}
-    function alt(){
-      if(st.view==='life')return P.name+' fra Frostline på modell';
-      var lab=cutLabel(st.cut),snitt=lab?' i '+(lab==='Unisex'?'unisex-snitt':'damesnitt'):'';
-      return colorName(st.color)+' '+P.lname+snitt+' fra Frostline, '+(st.view==='front'?'forfra':'bakfra');
-    }
-    function render(){
-      var f=file(st),life=st.view==='life';
-      img.srcset=f+'-600.webp 600w, '+f+'-1000.webp 1000w';img.src=f+'-1000.webp';img.alt=alt();
-      stage.classList.toggle('is-life',life);if(sws)sws.classList.toggle('off',life);
-    }
-    var warm=false;
-    function preload(){
-      if(warm)return;warm=true;
-      var size=(img.currentSrc||img.src).indexOf('-600.')>-1?'-600.webp':'-1000.webp';
-      P.cuts.forEach(function(c){
-        D.c.forEach(function(col){['front','back'].forEach(function(v){(new Image()).src=file({cut:c[0],color:col[0],view:v})+size;});});
-        (new Image()).src='img/p/'+c[0]+'-life'+size;
-      });
-    }
-    ctrl.addEventListener('pointerenter',preload);ctrl.addEventListener('focusin',preload);
-    ctrl.addEventListener('touchstart',preload,{passive:true});
-    ctrl.addEventListener('click',function(e){
-      var b=e.target.closest('button[data-v]');if(!b)return;
-      var grp=b.parentNode;st[grp.getAttribute('data-k')]=b.getAttribute('data-v');
-      grp.querySelectorAll('button[data-v]').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
-      render();
-    });
-  }
-  document.querySelectorAll('[data-p]').forEach(studio);
-
   /* photo rows: arrows on wide screens, swipe everywhere */
   document.querySelectorAll('.worn').forEach(function(w){
     var rail=w.querySelector('.rail'),a=w.querySelectorAll('.arr');
@@ -85,17 +45,24 @@
     });
   }
 
-  /* lightbox for any set: a garment's photos (p0..) or a group's (g0..) */
+  /* lightbox for any set: a garment (p0..: its model photos, then the groups in it)
+     or a group (g0..) */
   var lb=document.getElementById('lb'),lbImg=document.getElementById('lb-img'),cap=document.getElementById('lb-cap');
   var set=null,i=0,lastFocus=null;
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-  function src(im){return 'img/'+im.b+'-l.webp';}
+  function src(im){return im.s||'img/'+im.b+'-l.webp';}
   function warmLb(k){var im=set.imgs[k];if(im)(new Image()).src=src(im);}
   function show(){
-    var im=set.imgs[i],n=set.imgs.length,who=im.g||set.t;
+    var im=set.imgs[i],n=set.imgs.length,pos=' · '+(i+1)+' / '+n;
     lbImg.src=src(im);
-    lbImg.alt='Russegruppa '+who+(set.k==='p'?' i '+set.t.toLowerCase():' i klær')+' fra Frostline';
-    cap.innerHTML='<b>'+esc(who)+'</b>'+(set.k==='p'?' · '+esc(set.t):'')+' · '+(i+1)+' / '+n;
+    if(im.s){
+      lbImg.alt=set.t+' fra Frostline på modell'+(im.c?', '+im.c.toLowerCase():'');
+      cap.innerHTML='<b>'+esc(set.t)+'</b>'+(im.c?' · '+esc(im.c):'')+pos;
+    }else{
+      var who=im.g||set.t;
+      lbImg.alt='Russegruppa '+who+(set.k==='p'?' i '+set.t.toLowerCase():' i klær')+' fra Frostline';
+      cap.innerHTML='<b>'+esc(who)+'</b>'+(set.k==='p'?' · '+esc(set.t):'')+pos;
+    }
     warmLb((i+1)%n);warmLb((i-1+n)%n);
   }
   function open(key,k){

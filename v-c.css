@@ -14,7 +14,7 @@ body.v-c{--bg:#000;--bg2:#000}
 .row-plus::before,.row-plus::after{content:"";position:absolute;left:0;top:50%;width:100%;height:2px;background:#fff;transition:transform .3s ease}
 .row-plus::after{transform:rotate(90deg)}
 .row[open] .row-plus::after{transform:rotate(0)}
-.row-peek{position:absolute;right:clamp(60px,9vw,140px);top:50%;height:clamp(120px,15vw,210px);width:auto;opacity:0;transform:translateY(-50%) rotate(-7deg) scale(.9);transition:opacity .3s,transform .4s ease;pointer-events:none;filter:drop-shadow(0 18px 26px rgba(0,0,0,.6))}
+.row-peek{position:absolute;right:clamp(60px,9vw,140px);top:50%;width:clamp(120px,14vw,200px);height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:14px;opacity:0;transform:translateY(-50%) rotate(-6deg) scale(.9);transition:opacity .3s,transform .4s ease;pointer-events:none;box-shadow:0 18px 40px rgba(0,0,0,.55)}
 @media(hover:hover) and (min-width:900px){
   .row:not([open]) summary:hover .row-peek{opacity:1;transform:translateY(-50%) rotate(-4deg) scale(1)}
   .row summary:hover .row-name{transform:translateX(14px)}
@@ -22,9 +22,8 @@ body.v-c{--bg:#000;--bg2:#000}
 @media(max-width:899px){.row-peek{display:none}}
 .rows:hover .row:not([open]) summary:not(:hover) .row-name{color:#5d5d66}
 .row-body{display:grid;gap:26px;padding:6px 0 clamp(40px,5vw,64px)}
-.studio{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-@media(min-width:900px){.studio{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}}
-.studio .stage{border-radius:14px}
+.models{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:880px}
+.model{aspect-ratio:1/1;border-radius:16px}
 
 .roster{padding:clamp(72px,10vw,130px) 0;border-top:1px solid var(--line)}
 .roster-grid{display:grid;gap:40px}

@@ -1,28 +1,18 @@
-/* b: Kampanje. A wall of the groups behind the logo, one photo panel per garment with its
-   name in outlined varsity type, the name ticker, then the groups edge to edge. */
+/* b: Kampanje. A wall of the groups behind the logo, the garments as one big swipeable
+   strip with outlined varsity names, the name ticker, then the groups edge to edge. */
 .hero-b{position:relative;display:grid;place-items:center;min-height:min(88svh,880px);padding:72px 16px 96px;overflow:hidden;text-align:center}
 .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;transform:scale(1.04)}
 .hero-b::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 55% at 50% 50%,rgba(9,9,11,.5),rgba(9,9,11,.92) 100%),linear-gradient(180deg,rgba(9,9,11,.3),rgba(9,9,11,.2) 60%,var(--bg))}
 .hero-in{position:relative;z-index:1;width:100%}
 
-.panels{border-top:1px solid var(--line)}
-.panel{display:grid;border-bottom:1px solid var(--line)}
-.panel-photo{position:relative;display:block;width:100%;aspect-ratio:4/5;overflow:hidden;background:var(--card)}
-.panel-photo img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s ease}
-@media(hover:hover){.panel-photo:hover img{transform:scale(1.03)}}
-.panel-credit,.panel-count{position:absolute;padding:7px 12px;border-radius:999px;background:rgba(9,9,11,.78);font-size:14px;line-height:1.2}
-.panel-credit{left:16px;bottom:16px;font-family:var(--varsity);letter-spacing:.04em;text-transform:uppercase}
-.panel-count{right:16px;top:16px;display:inline-flex;align-items:center;gap:7px;font-weight:800}
-.panel-count svg{width:15px;height:15px}
-.panel-body{display:flex;flex-direction:column;align-items:flex-start;padding:34px 16px 56px}
-.panel-name{margin:0;font-family:var(--varsity);font-weight:400;font-size:clamp(52px,9vw,128px);line-height:.9;letter-spacing:.01em;text-transform:uppercase;color:transparent;-webkit-text-stroke:1.5px #fff}
-.panel-studio{width:100%;max-width:420px;margin-top:30px}
-@media(min-width:900px){
-  .panel{grid-template-columns:1fr 1fr;min-height:min(100svh,980px)}
-  .panel-photo{aspect-ratio:auto;height:100%}
-  .panel-body{justify-content:center;padding:64px clamp(32px,5vw,88px)}
-  .panel.flip .panel-photo{order:2}
-}
+.strip-sec{padding:clamp(40px,6vw,80px) 0 clamp(56px,8vw,104px);border-top:1px solid var(--line)}
+.strip{grid-auto-columns:78%;gap:14px;margin:0;padding:0 16px;scroll-padding:0 16px}
+@media(min-width:640px){.strip{grid-auto-columns:44%;padding:0 32px;scroll-padding:0 32px}}
+@media(min-width:1100px){.strip{--edge:max(32px,calc((100vw - var(--wrap)) / 2 + 32px));grid-auto-columns:calc((min(100vw,var(--wrap)) - 64px - 28px) / 3.25);gap:14px;padding:0 var(--edge);scroll-padding:0 var(--edge)}}
+.slide{scroll-snap-align:start;min-width:0;container-type:inline-size}
+.slide-photo{width:100%;aspect-ratio:4/5;border-radius:18px}
+.slide .p-num{margin:18px 0 6px}
+.slide-name{margin:0;font-family:var(--varsity);font-weight:400;font-size:clamp(26px,3.4vw,52px);font-size:9.6cqi;line-height:.95;letter-spacing:.01em;text-transform:uppercase;white-space:nowrap;color:transparent;-webkit-text-stroke:1.3px #fff}
 
 .wall{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;margin:0;padding:0;list-style:none}
 @media(min-width:720px){.wall{grid-template-columns:repeat(4,minmax(0,1fr))}}

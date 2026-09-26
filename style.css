@@ -50,18 +50,16 @@ body::after{content:"";position:fixed;inset:0;z-index:70;pointer-events:none;opa
 @keyframes ticker{to{transform:translateX(-50%)}}
 @media(hover:hover){.marquee:hover .marquee-track{animation-play-state:paused}}
 
-/* studio: the garment on its own, with side, colour and cut */
-.stage{position:relative;margin:0;aspect-ratio:1/1;background:var(--stage);border-radius:var(--r);overflow:hidden;isolation:isolate}
-.stage img{width:100%;height:100%;object-fit:cover;mix-blend-mode:multiply}
-.stage.is-life img{mix-blend-mode:normal}
-.ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:12px}
-.seg{display:inline-flex;padding:3px;border-radius:999px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
-.seg button{min-height:36px;padding:0 14px;border-radius:999px;font-size:13.5px;font-weight:700;color:var(--soft);transition:background .15s,color .15s}
-.seg button[aria-pressed="true"]{background:#fff;color:#09090b}
-.swatches{display:inline-flex;align-items:center;gap:10px}
-.sw{width:28px;height:28px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
-.sw[aria-pressed="true"]{outline:2px solid #fff;outline-offset:3px}
-.swatches.off{opacity:.3;pointer-events:none}
+/* a garment: its model photo, and on hover the same garment on a group */
+.shot{position:relative;display:block;overflow:hidden;background:var(--stage)}
+.shot img{width:100%;height:100%;object-fit:cover;transition:transform .8s ease,opacity .5s ease}
+.shot .alt{position:absolute;inset:0;opacity:0}
+@media(hover:hover){
+  .shot:hover .alt,.shot:focus-visible .alt,button:hover > .shot .alt,button:focus-visible > .shot .alt{opacity:1}
+  .shot:hover img,button:hover > .shot img{transform:scale(1.03)}
+}
+.count{position:absolute;right:10px;top:10px;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(9,9,11,.78);color:#fff;font-size:12.5px;font-weight:800;line-height:1.2}
+.count svg{width:14px;height:14px}
 
 /* photos from the groups, in a swipeable row */
 .worn{min-width:0}

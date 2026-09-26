@@ -1,34 +1,23 @@
 {
- "_note": "The four garments, in page order. 'img' is [file prefix in img/p/, cut label] per cut, written by make_product_images.py; grey and navy are the colours on the supply orders. 'worn' lists the Instagram photos (post-slide) that show this garment, best first.",
- "colors": [["graa", "Grå", "#d6d6da"], ["navy", "Navy", "#2b2e48"]],
+ "_note": "The garments russ groups order (the order sheets and the China shipments list them; the college jacket comes from the Qianshi chat), in page order: college jacket last, headband left off (Alexander, 2026-09-26). 'photos' are the on-model shots, [image id, cut label], written by make_product_images.py to img/p/<id>-model-*.webp. 'worn' lists Instagram photos (post-slide) that clearly show this garment, best first; none yet for the college jacket, shorts and t-shirt.",
  "products": [
-  {
-   "id": "zip-hoodie",
-   "name": "Zip hoodie",
-   "lname": "zip hoodie",
-   "img": [["zip-hoodie", ""]],
-   "worn": ["03-3", "13-1", "09-1", "20-4", "16-3", "18-3", "19-5", "11-1", "23-3", "07-4"]
-  },
-  {
-   "id": "hoodie",
-   "name": "Hoodie",
-   "lname": "hoodie",
-   "img": [["hoodie", ""]],
-   "worn": ["18-4", "19-6", "15-1", "14-1", "22-3", "08-3", "03-4", "01-1", "09-3", "13-3", "22-1"]
-  },
-  {
-   "id": "crewneck",
-   "name": "Crewneck",
-   "lname": "crewneck",
-   "img": [["crewneck", ""]],
-   "worn": ["21-2", "21-4", "21-3", "27-2", "21-1", "23-1"]
-  },
-  {
-   "id": "bukse",
-   "name": "Bukse",
-   "lname": "bukse",
-   "img": [["bukse-unisex", "Unisex"], ["bukse-dame", "Dame"]],
-   "worn": ["17-3", "14-3", "23-4", "30-2", "29-2", "30-1", "17-1"]
-  }
+  {"id": "zip-hoodie", "name": "Zip hoodie", "lname": "zip hoodie", "photos": [["zip-hoodie", ""]],
+   "worn": ["03-3", "13-1", "09-1", "20-4", "16-3", "18-3", "19-5", "11-1", "23-3", "07-4"]},
+  {"id": "hoodie", "name": "Hoodie", "lname": "hoodie", "photos": [["hoodie", ""]],
+   "worn": ["18-4", "19-6", "15-1", "14-1", "22-3", "08-3", "03-4", "01-1", "09-3", "13-3", "22-1"]},
+  {"id": "crewneck", "name": "Crewneck", "lname": "crewneck", "photos": [["crewneck", ""]],
+   "worn": ["21-2", "21-4", "21-3", "27-2", "21-1", "23-1"]},
+  {"id": "bukse", "name": "Bukse", "lname": "bukse", "photos": [["bukse-unisex", "Unisex"], ["bukse-dame", "Dame"]],
+   "worn": ["17-3", "14-3", "23-4", "30-2", "29-2", "30-1", "17-1"]},
+  {"id": "shorts", "name": "Shorts", "lname": "shorts", "photos": [["shorts-unisex", "Unisex"], ["shorts-dame", "Dame"]],
+   "worn": []},
+  {"id": "t-skjorte", "name": "T-skjorte", "lname": "t-skjorte", "photos": [["t-skjorte", ""]],
+   "worn": []},
+  {"id": "longsleeve", "name": "Longsleeve", "lname": "longsleeve", "photos": [["longsleeve", ""]],
+   "worn": ["03-2", "18-1", "24-4", "17-4", "25-2"]},
+  {"id": "singlet", "name": "Singlet", "lname": "singlet", "photos": [["singlet", ""]],
+   "worn": ["22-5", "22-2", "01-2"]},
+  {"id": "collegejakke", "name": "Collegejakke", "lname": "collegejakke", "photos": [["collegejakke", ""]],
+   "worn": []}
  ]
 }

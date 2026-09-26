@@ -4,10 +4,11 @@
   python3 _source/build.py --live b     # make style b the live one (saved in site.json)
 
 Three styles share the same data, images, style.css and app.js:
-  a  Lookbook   the logo over the four garments, a studio for each, the groups as a grid
-  b  Kampanje   a wall of group photos behind the logo, one big photo panel per garment
+  a  Lookbook   the logo, then every garment as a tile that turns into a group wearing it
+  b  Kampanje   a wall of group photos behind the logo, the garments as one big swipeable strip
   c  Indeks     a black index you open garment by garment, the groups as a name list
 
+Each garment opens a lightbox: its model photo(s) first, then the groups wearing it.
 preview-a.html, preview-b.html and preview-c.html are for choosing locally; they are
 gitignored and carry noindex. Only index.html is the site.
 """
@@ -32,8 +33,7 @@ if '--live' in sys.argv:
 
 posts = {p['n']: p for p in json.load(open(f'{S}/posts.json'))}
 groups = json.load(open(f'{S}/groups.json'))
-cat = json.load(open(f'{S}/products.json'))
-COLORS, PRODUCTS = cat['colors'], cat['products']
+PRODUCTS = json.load(open(f'{S}/products.json'))['products']
 
 _dims = {}
 def dims(b):
@@ -57,16 +57,17 @@ for p in PRODUCTS:
     p['worn_imgs'] = [{'b': b, 'w': dims(b)[0], 'h': dims(b)[1], 'g': group_of[b.split('-')[0]]} for b in p['worn']]
 N_GROUPS = len(GROUPS)
 
-DATA = {'s': {}, 'p': [], 'c': COLORS}
+# lightbox sets: p<i> is a garment (model photos, then the groups in it), g<i> a group
+DATA = {'s': {}}
 for i, p in enumerate(PRODUCTS):
-    DATA['s'][f'p{i}'] = {'t': p['name'], 'k': 'p', 'imgs': p['worn_imgs']}
-    DATA['p'].append({'name': p['name'], 'lname': p['lname'], 'cuts': p['img']})
+    model = [{'s': f'img/p/{pid}-model-1000.webp', 'w': 1000, 'h': 1000, 'c': cut} for pid, cut in p['photos']]  # stamped below
+    DATA['s'][f'p{i}'] = {'t': p['name'], 'k': 'p', 'imgs': model + p['worn_imgs']}
 for i, g in enumerate(GROUPS):
     DATA['s'][f'g{i}'] = {'t': g['name'], 'k': 'g', 'imgs': g['imgs']}
 
 TITLE = 'Frostline | Russeklær for russegrupper'
-DESC = ('Frostline lager russeklær for russegrupper: zip hoodie, hoodie, crewneck og bukse '
-        'med gruppas eget trykk. Se plaggene og gruppene som går i dem. Kontakt oss på Instagram.')
+DESC = ('Frostline lager russeklær for russegrupper: zip hoodie, hoodie, crewneck, bukse, shorts, '
+        't-skjorte, longsleeve, singlet og collegejakke med gruppas eget trykk. Kontakt oss på Instagram.')
 LD = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -97,6 +98,7 @@ def version(f):
 
 
 def photo(b, alt, sizes, eager=False, large=False, cls=''):
+    """An Instagram photo, img/<post>-<slide>-{s,m,l}.webp."""
     w, h = dims(b)
     srcset = f'img/{b}-s.webp 480w, img/{b}-m.webp 900w' + (f', img/{b}-l.webp 1440w' if large else '')
     load = ' fetchpriority="high"' if eager else ' loading="lazy"'
@@ -105,44 +107,49 @@ def photo(b, alt, sizes, eager=False, large=False, cls=''):
             f'alt="{E(alt)}"{load} decoding="async">')
 
 
-def cut_label(p, cut):
-    return dict(p['img'])[cut]
+def model_src(pid, w):
+    """A model photo's URL, stamped with its content so a new photo is never served from cache."""
+    f = f'img/p/{pid}-model-{w}.webp'
+    return f'{f}?v={version(f)}'
 
 
-def studio_alt(p, cut, color, view):
-    if view == 'life':
-        return f"{p['name']} fra Frostline på modell"
-    lab = cut_label(p, cut)
-    snitt = f" i {'unisex-snitt' if lab == 'Unisex' else 'damesnitt'}" if lab else ''
-    col = dict((c, n) for c, n, _ in COLORS)[color]
-    return f"{col} {p['lname']}{snitt} fra Frostline, {'forfra' if view == 'front' else 'bakfra'}"
+def model_alt(p, cut):
+    return f"{p['name']} fra Frostline på modell" + (f", {cut.lower()}" if cut else '')
 
 
-def stage(p, sizes):
-    cut = p['img'][0][0]
-    b = f'img/p/{cut}-graa-front'
-    segs = ''
-    if len(p['img']) > 1:
-        segs += ('<div class="seg" data-k="cut" role="group" aria-label="Snitt">' + ''.join(
-            f'<button type="button" data-v="{c}" aria-pressed="{str(k == 0).lower()}">{E(l)}</button>'
-            for k, (c, l) in enumerate(p['img'])) + '</div>')
-    segs += ('<div class="seg" data-k="view" role="group" aria-label="Vis plagget">' + ''.join(
-        f'<button type="button" data-v="{v}" aria-pressed="{str(k == 0).lower()}">{l}</button>'
-        for k, (v, l) in enumerate((('front', 'Foran'), ('back', 'Bak'), ('life', 'Modell')))) + '</div>')
-    sw = ('<div class="swatches" data-k="color" role="group" aria-label="Farge">' + ''.join(
-        f'<button type="button" class="sw" data-v="{c}" aria-pressed="{str(k == 0).lower()}" '
-        f'aria-label="{E(n)}" title="{E(n)}" style="--c:{hx}"></button>' for k, (c, n, hx) in enumerate(COLORS))
-          + '</div>')
-    return (f'<div class="stage"><img src="{b}-1000.webp" srcset="{b}-600.webp 600w, {b}-1000.webp 1000w" '
-            f'sizes="{sizes}" width="1000" height="1000" alt="{E(studio_alt(p, cut, "graa", "front"))}" '
-            f'loading="lazy" decoding="async"></div>'
-            f'<div class="ctrl">{segs}{sw}</div>')
+def model_img(p, k, sizes, cls=''):
+    """The k-th on-model photo of a garment, img/p/<id>-model-{600,1000}.webp."""
+    pid, cut = p['photos'][k]
+    c = f' class="{cls}"' if cls else ''
+    big, small = model_src(pid, 1000), model_src(pid, 600)
+    return (f'<img{c} src="{big}" srcset="{small} 600w, {big} 1000w" sizes="{sizes}" width="1000" height="1000" '
+            f'alt="{E(model_alt(p, cut))}" loading="lazy" decoding="async">')
+
+
+def second_look(p, sizes):
+    """What a tile turns into on hover: the garment on a group, else its other cut."""
+    if p['worn_imgs']:
+        im = p['worn_imgs'][0]
+        return photo(im['b'], f"Russegruppa {im['g']} i {p['lname']} fra Frostline", sizes, cls='alt')
+    if len(p['photos']) > 1:
+        return model_img(p, 1, sizes, cls='alt')
+    return ''
+
+
+def count(p):
+    n = len(p['photos']) + len(p['worn_imgs'])
+    return f'<span class="count" aria-hidden="true">{ICON_STACK}{n}</span>'
+
+
+def open_label(p):
+    return f"{p['name']}: se bilder"
 
 
 def rail(p, pi):
-    n = len(p['worn_imgs'])
+    offset = len(p['photos'])
+    n = offset + len(p['worn_imgs'])
     tiles = ''.join(
-        f'<button class="tile" type="button" data-s="p{pi}" data-i="{k}" aria-label="{E(im["g"])}, bilde {k + 1} av {n}">'
+        f'<button class="tile" type="button" data-s="p{pi}" data-i="{offset + k}" aria-label="{E(im["g"])}, bilde {offset + k + 1} av {n}">'
         + photo(im['b'], f"Russegruppa {im['g']} i {p['lname']} fra Frostline",
                 '(min-width: 960px) 240px, (min-width: 640px) 38vw, 62vw')
         + f'<span class="tile-g">{E(im["g"])}</span></button>'
@@ -236,37 +243,26 @@ def group_cards(sizes, cls='gcard'):
     return ''.join(out)
 
 
-def lineup():
-    items = []
-    for p in PRODUCTS:
-        pid = p['id']
-        w, h = Image.open(f'{SITE}/img/p/lineup-{pid}.webp').size
-        items.append(f'<a href="#{pid}"><img src="img/p/lineup-{pid}.webp" alt="" width="{w}" height="{h}" '
-                     f'fetchpriority="high"><span>{E(p["name"])}</span></a>')
-    return '<nav class="lineup" aria-label="Plaggene">' + ''.join(items) + '</nav>'
-
-
 # ---------------------------------------------------------------- a: Lookbook
 def body_a():
-    arts = []
-    for pi, p in enumerate(PRODUCTS):
-        arts.append(f'''<article class="product{' flip' if pi % 2 else ''}" id="{p['id']}" data-p="{pi}">
-<div class="p-media">{stage(p, '(min-width: 960px) 560px, 100vw')}</div>
-<div class="p-info">
-<p class="p-num">0{pi + 1}<span> / 0{len(PRODUCTS)}</span></p>
-<h3 class="p-name">{E(p['name'])}</h3>
-</div>
-{rail(p, pi)}
-</article>''')
+    n = len(PRODUCTS)
+    def sizes(pi):
+        # a phone shows two across, except an odd last tile, which runs full width
+        phone = '92vw' if pi == n - 1 and n % 2 else '46vw'
+        return f'(min-width: 1240px) 390px, (min-width: 600px) 31vw, {phone}'
+    tiles = ''.join(
+        f'<li id="{p["id"]}"><button class="ptile" type="button" data-s="p{pi}" data-i="0" aria-label="{E(open_label(p))}">'
+        f'<span class="ptile-img shot">{model_img(p, 0, sizes(pi))}{second_look(p, sizes(pi))}{count(p)}</span>'
+        f'<span class="ptile-name">{E(p["name"])}</span></button></li>'
+        for pi, p in enumerate(PRODUCTS))
     return f'''<main>
 <section class="hero" id="top">
 {logo_h1()}
-{lineup()}
 </section>
-<section class="products" id="produkter" aria-labelledby="p-h">
+<section class="catalog" id="produkter" aria-labelledby="p-h">
 <div class="wrap">
 <h2 class="sr" id="p-h">Plaggene</h2>
-{''.join(arts)}
+<ul class="pgrid">{tiles}</ul>
 </div>
 </section>
 {marquee()}
@@ -294,22 +290,15 @@ def mosaic():
 
 def body_b():
     mw, mh = mosaic()
-    panels = []
-    for pi, p in enumerate(PRODUCTS):
-        feat = p['worn_imgs'][0]
-        n = len(p['worn_imgs'])
-        panels.append(f'''<article class="panel{' flip' if pi % 2 else ''}" id="{p['id']}" data-p="{pi}">
-<button class="panel-photo" type="button" data-s="p{pi}" data-i="0" aria-label="Se {n} bilder av {E(p['lname'])} på russen">
-{photo(feat['b'], f"Russegruppa {feat['g']} i {p['lname']} fra Frostline", '(min-width: 900px) 50vw, 100vw', large=True)}
-<span class="panel-credit">{E(feat['g'])}</span>
-<span class="panel-count" aria-hidden="true">{ICON_STACK}{n}</span>
-</button>
-<div class="panel-body">
-<p class="p-num">0{pi + 1}<span> / 0{len(PRODUCTS)}</span></p>
-<h3 class="panel-name">{E(p['name'])}</h3>
-<div class="panel-studio">{stage(p, '(min-width: 900px) 380px, 100vw')}</div>
-</div>
-</article>''')
+    sizes = '(min-width: 1100px) 30vw, (min-width: 640px) 44vw, 78vw'
+    slides = ''.join(
+        f'<article class="slide" id="{p["id"]}">'
+        f'<button class="slide-photo shot" type="button" data-s="p{pi}" data-i="0" aria-label="{E(open_label(p))}">'
+        f'{model_img(p, 0, sizes)}{second_look(p, sizes)}{count(p)}</button>'
+        f'<p class="p-num">{pi + 1:02d}<span> / {len(PRODUCTS):02d}</span></p>'
+        f'<h3 class="slide-name">{E(p["name"])}</h3></article>'
+        for pi, p in enumerate(PRODUCTS))
+    arrows = ''.join(f'<button class="arr" type="button" data-dir="{d}" aria-label="{"Forrige" if d < 0 else "Neste"} plagg">{CHEV[d]}</button>' for d in (-1, 1))
     return f'''<main>
 <section class="hero hero-b" id="top">
 <img class="hero-bg" src="assets/mosaic.jpg" alt="" width="{mw}" height="{mh}" fetchpriority="high">
@@ -318,9 +307,10 @@ def body_b():
 </div>
 <a class="scroll-cue" href="#produkter" aria-label="Til plaggene"><span></span></a>
 </section>
-<section class="panels" id="produkter" aria-labelledby="p-h">
+<section class="strip-sec worn" id="produkter" aria-labelledby="p-h">
 <h2 class="sr" id="p-h">Plaggene</h2>
-{''.join(panels)}
+<div class="wrap strip-head"><div class="arrows">{arrows}</div></div>
+<div class="rail strip">{slides}</div>
 </section>
 {marquee()}
 <section class="groups-b" id="grupper" aria-labelledby="g-h">
@@ -331,27 +321,20 @@ def body_b():
 
 
 # ---------------------------------------------------------------- c: Indeks
-def studio_strip(p):
-    shots = []
-    for cut, lab in p['img']:
-        views = (('graa', 'front'), ('navy', 'front')) if len(p['img']) > 1 else (('graa', 'front'), ('graa', 'back'), ('navy', 'front'), ('navy', 'back'))
-        for col, v in views:
-            shots.append((cut, col, v))
-    return '<div class="studio">' + ''.join(
-        f'<figure class="stage"><img src="img/p/{c}-{col}-{v}-600.webp" width="600" height="600" '
-        f'alt="{E(studio_alt(p, c, col, v))}" loading="lazy" decoding="async"></figure>' for c, col, v in shots) + '</div>'
-
-
 def body_c():
     rows = []
     for pi, p in enumerate(PRODUCTS):
-        w, h = Image.open(f'{SITE}/img/p/lineup-{p["id"]}.webp').size
-        rows.append(f'''<details class="row" id="{p['id']}" data-p="{pi}">
-<summary><span class="row-num">0{pi + 1}</span><span class="row-name">{E(p['name'])}</span><span class="row-plus" aria-hidden="true"></span>
-<img class="row-peek" src="img/p/lineup-{p['id']}.webp" alt="" width="{w}" height="{h}" loading="lazy"></summary>
+        pid = p['photos'][0][0]
+        models = ''.join(
+            f'<button class="model shot" type="button" data-s="p{pi}" data-i="{k}" aria-label="{E(model_alt(p, cut))}">'
+            f'{model_img(p, k, "(min-width: 900px) 420px, 50vw")}</button>'
+            for k, (_, cut) in enumerate(p['photos']))
+        rows.append(f'''<details class="row" id="{p['id']}">
+<summary><span class="row-num">{pi + 1:02d}</span><span class="row-name">{E(p['name'])}</span><span class="row-plus" aria-hidden="true"></span>
+<img class="row-peek" src="{model_src(pid, 600)}" alt="" width="600" height="600" loading="lazy"></summary>
 <div class="row-body">
-{studio_strip(p)}
-{rail(p, pi)}
+<div class="models">{models}</div>
+{rail(p, pi) if p['worn_imgs'] else ''}
 </div>
 </details>''')
     names = []
@@ -385,6 +368,11 @@ def body_c():
 '''
 
 
+for st in DATA['s'].values():
+    for im in st['imgs']:
+        if 's' in im and '?v=' not in im['s']:
+            im['s'] += f"?v={version(im['s'])}"
+
 BODIES = {'a': body_a, 'b': body_b, 'c': body_c}
 
 
@@ -404,5 +392,5 @@ open(f'{SITE}/sitemap.xml', 'w').write(
 open(f'{SITE}/robots.txt', 'w').write(f'User-agent: *\nAllow: /\nDisallow: /_source/\nDisallow: /preview-\nSitemap: {URL}sitemap.xml\n')
 
 n_imgs = sum(len(g['imgs']) for g in GROUPS)
-print(f"live style {site['live']}, groups {N_GROUPS}, group photos {n_imgs}, "
-      f"product photos {sum(len(p['worn']) for p in PRODUCTS)}, index.html {len(live)} bytes")
+print(f"live style {site['live']}, garments {len(PRODUCTS)}, groups {N_GROUPS}, group photos {n_imgs}, "
+      f"garment photos {sum(len(p['worn']) for p in PRODUCTS)}, index.html {len(live)} bytes")
