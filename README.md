@@ -1,9 +1,10 @@
 # russ.frostlinenorge.no
 
 Frostline's showcase for russegrupper: every garment a group can order first (zip hoodie,
-hoodie, crewneck, collegejakke, bukse, shorts, t-skjorte, longsleeve, singlet, pannebånd),
-each on a model and then on the groups that wear it, then the groups themselves. No shop,
-no email and almost no text on purpose; the only way in is a DM to @frostlineno.
+hoodie, crewneck, bukse, shorts, t-skjorte, longsleeve, singlet, collegejakke) as a product
+card that opens the garment's own page, then the custom pieces, then the groups themselves.
+No shop, no prices, no email and almost no text on purpose; the only way in is a DM to
+@frostlineno.
 
 Hosted on GitHub Pages from `main`; `CNAME` pins the custom domain (written by the build from `site.json`). `index.html` is
 generated, never edit it by hand.
@@ -11,7 +12,13 @@ generated, never edit it by hand.
 ## Files
 
 - `index.html`: the page, written by `_source/build.py`.
+- `<id>.html` (`zip-hoodie.html`, `hoodie.html`, ...): each garment's own page, also written by
+  `build.py`, served as russ.frostlinenorge.no/hoodie. `shop.css` + `pp.js` are theirs (the
+  cards on the front page use `shop.css` too).
 - `style.css` + `app.js`: shared by every style. `v-a.css`, `v-b.css`, `v-c.css`: the three styles.
+- `img/shop/<id>[-<cut>]-<colour>-<front|back>-{600,1200}.webp`: the product photos, cut out of
+  their white ground (transparent), and `<first front>-og.jpg` for each page's link preview
+  (`make_shop_images.py`).
 - `img/<post>-<slide>-{s,m,l}.webp`: Instagram photos at 480, 900 and 1440 px.
 - `img/p/<id>-model-{600,1000}.webp`: one on-model photo per garment (two for the cuts of
   bukse and shorts).
@@ -32,19 +39,26 @@ built as `preview-a.html`, `preview-b.html`, `preview-c.html` for local use (git
 
 - **a, Lookbook**: the logo, then every garment as a tile; hovering a tile turns the model
   photo into a group wearing it. Then the name ticker and the groups in black and white.
-- **b, Kampanje**: a wall of the groups behind the logo with the groups' own chest logos
-  running underneath (each opens that group's photos); the garments as slides you swipe
-  sideways or pick by name (a group wearing it, the outlined varsity name and the model
-  photo, then two more groups); the groups edge to edge; the custom pieces last.
+- **b, Kampanje** (live): a wall of the groups behind the logo with the groups' own chest
+  logos running underneath, each in its own dark tile (each opens that group's photos); the
+  garments as dark product cards you swipe or pick by name (the garment floating on a soft
+  light, the name in Varsity, a dot per colour: pointing at a dot shows that colour, clicking
+  opens the page in it); the custom pieces; the groups edge to edge.
 - **c, Indeks**: black and closed, the garments as an index you open one by one, the groups
   as a name list whose photo follows the pointer.
 
-Clicking a garment anywhere opens its model photo(s) first, then the groups wearing it.
+In a and c, clicking a garment opens its model photo(s) first, then the groups wearing it.
+In b it opens the garment's page: the product photos (front, back, on a model) in the colour
+and cut picked beside them (a link can pick them: `hoodie#navy`, `bukse#dame-svart`), the
+name in Varsity, "Farge", for the hoodie and zip hoodie (`"navn": true` in products.json) an
+Etternavn field that draws the name on the back photo as it is typed (Bebas Neue, the print
+font, in the school store's print box; white on navy and black), the DM; then the groups
+wearing it (lightbox), then the other garments.
 
 ```
-python3 _source/build.py            # rebuild index.html and the previews
+python3 _source/build.py            # rebuild index.html, the garment pages and the previews
 python3 _source/build.py --live b   # switch the live style
-python3 -m http.server 8765         # then open http://localhost:8765/preview-a.html
+python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.html (serves /hoodie like Pages does)
 ```
 
 ## Data
@@ -79,6 +93,18 @@ python3 -m http.server 8765         # then open http://localhost:8765/preview-a.
   skole shots): hoodie and zip hoodie are the skole shots with russ-length cords, plus
   collegejakke, shorts, singlet and pannebånd. `--dry-run` prints the prompts, `--only a,b`
   redoes some. Then `python3 _source/make_product_images.py` and `build.py`.
+- **Product photos** (the cards and garment pages): `python3 _source/make_shop_images.py`
+  writes `img/shop/` and `_source/shop.json` (which cuts, colours and views exist). Grey, navy
+  and white are the skoleklær store's studio shots (`~/skole/assets/skole_*_{front,back}.jpg`),
+  black is made there from the navy, and shorts, singlet and collegejakke come from
+  `node _source/product_shots.mjs` (gpt-image-2, our model photo as the garment and a skole shot
+  for the look; writes the gitignored `_source/product-shots/`). A new colour or garment is a
+  line in its `SOURCES`, then `build.py`. Each photo is cut out of its white ground there.
+- **The Varsity names**: product names and the Custom heading are drawn from the Varsity font
+  (Brøderbund, 1996, from https://www.dafont.com/varsity-2.font, no licence given) as SVG
+  outlines by `_source/varsity.py`; the font file itself is never published. It lives in the
+  gitignored `_source/fonts/varsity_regular.ttf` on this Mac; another machine needs it
+  downloaded there before `build.py` runs. Needs `fonttools` (and `scipy` for the cutouts).
 - **Icons**: `python3 _source/make_icons.py` makes the favicon (the wordmark's F, which
   Google shows beside the site name) and the home-screen icon.
 
@@ -91,8 +117,10 @@ places visitors do not see: the meta description, JSON-LD in the head (Organizat
 "Frostline", also "Frostline Norge", Frostec AS, the Instagram account and the skoleklær
 store as `sameAs`, plus WebSite and WebPage), the hidden section headings ("Russeklær",
 "Russegruppene") and the photos' alt texts ("Russegruppa X i zip hoodie fra Frostline").
-`sitemap.xml` lists the front page and every described photo on it; `robots.txt` points to it.
-The `<title>` and `og:title` stay the bare name.
+`sitemap.xml` lists the front page and every garment page with every described photo on
+them; `robots.txt` points to it. The front page's `<title>` and `og:title` stay the bare
+name; a garment page is "Hoodie | Frostline" with its own description, canonical, link
+preview and a BreadcrumbList.
 
 `_source/site.json` holds the addresses: `"domain"` (written to `CNAME` and used for
 canonical, og and sitemap URLs), `"skole"` (the skoleklær store) and `"forward"`. With
@@ -105,5 +133,6 @@ Bing, Yandex and the other IndexNow engines are told about a change with
 `curl "https://api.indexnow.org/indexnow?url=https://<domain>/&key=7aa21beeb74799d3de6a9380911714d5"`; the key file is
 `7aa21beeb74799d3de6a9380911714d5.txt` at the root.
 
-Search Console: not set up yet (2026-09-26). A Domain property for frostlinenorge.no,
-verified with a TXT record at Domene.no, covers the apex and every subdomain.
+Search Console: a Domain property for frostlinenorge.no, verified 2026-09-26 with a TXT record
+at Domene.no (keep it), covers the apex and every subdomain; the sitemaps are submitted
+there and in Bing Webmaster Tools.

@@ -1,7 +1,6 @@
 /* b: Kampanje. A wall of the groups behind the logo with their own chest logos running
-   underneath; the garments as slides you swipe or pick by name (a group wearing it, the
-   outlined name and the model photo, two more groups); the groups edge to edge; the
-   custom pieces last. */
+   underneath, each in its own dark tile; the garments as product cards you swipe or pick by
+   name (shop.css), each opening its own page; the custom pieces; the groups edge to edge. */
 .hero-b{position:relative;display:grid;place-items:center;min-height:min(100svh,1000px);padding:72px 0 clamp(120px,17vh,170px);overflow:hidden;text-align:center}
 .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.04);transition:opacity .6s ease}
 .hero-bg.in{opacity:.55}
@@ -11,16 +10,16 @@
 /* the groups' chest logos, running; each opens that group's photos */
 .logos{--lh:33px;position:absolute;z-index:1;left:0;right:0;bottom:clamp(22px,5vh,48px);overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
 .logos-track{display:flex;width:max-content;animation:ticker 80s linear infinite;will-change:transform}
-.logos ul{display:flex;align-items:center;gap:30px;margin:0;padding:6px 15px;list-style:none}
-.lg{display:block;line-height:0;transition:transform .25s ease}
-.lg img{width:auto;max-width:none;height:calc(var(--lh) * var(--f));opacity:0;transition:opacity .4s ease}
+.logos ul{display:flex;align-items:center;gap:10px;margin:0;padding:6px 5px;list-style:none}
+.lg{display:flex;align-items:center;justify-content:center;height:calc(var(--lh) * 1.5 + 18px);padding:0 16px;border-radius:14px;background:#18181c;box-shadow:inset 0 0 0 1px #26262d;line-height:0;transition:background .25s ease,box-shadow .25s ease}
+.lg img{width:auto;max-width:none;height:calc(var(--lh) * var(--f));opacity:0;transition:opacity .4s ease,transform .25s ease}
 .lg img.in{opacity:1}
-@media(min-width:720px){.logos{--lh:40px}.logos ul{gap:48px;padding:8px 24px}}
-@media(min-width:1280px){.logos{--lh:46px}}
-@media(hover:hover){.logos:hover .logos-track{animation-play-state:paused}.lg:hover{transform:scale(1.07)}}
+@media(min-width:720px){.logos{--lh:38px}.logos ul{gap:14px;padding:8px 7px}.lg{padding:0 22px;border-radius:16px}}
+@media(min-width:1280px){.logos{--lh:42px}}
+@media(hover:hover){.logos:hover .logos-track{animation-play-state:paused}.lg:hover{background:#202026;box-shadow:inset 0 0 0 1px #33333c}.lg:hover img{transform:scale(1.05)}}
 
-/* the garments: one slide each, swiped, or picked by name up top */
-.shop{padding:clamp(56px,7vw,76px) 0 clamp(72px,10vw,128px)}
+/* the garments: a card each (shop.css), swiped, or picked by name up top */
+.shop{padding:clamp(56px,7vw,76px) 0 clamp(64px,9vw,112px)}
 .car-head{display:flex;align-items:center;gap:16px;max-width:var(--wrap);margin:0 auto 16px;padding:0 16px}
 .car-tabs{position:relative;flex:1;min-width:0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:-4px -16px;padding:4px 16px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 28px),transparent)}
 .car-tabs::-webkit-scrollbar{display:none}
@@ -32,79 +31,20 @@
 .car-arr svg{width:20px;height:20px}
 .car-arr:hover{background:#202027}
 .car-arr:disabled{opacity:.3;cursor:default}
-.car-track{position:relative;display:flex;gap:16px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 16px;scroll-padding:0 16px}
+.car-track{position:relative;display:flex;gap:12px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 16px;scroll-padding:0 16px}
 .car-track::-webkit-scrollbar{display:none}
 .car-track:focus-visible{outline-offset:-2px}
-.car.ready .slide:not(.on){opacity:.38}
-
-/* a slide on a phone: the group and the name side by side, two more groups under them */
-.slide{flex:0 0 calc(100% - 24px);scroll-snap-align:start;display:grid;transition:opacity .45s ease;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"main body" "g1 g2";gap:4px;align-content:start;border-radius:20px;overflow:hidden}
-.s-main,.s-g{position:relative;display:block;width:100%;overflow:hidden;background:var(--card)}
-.s-main{grid-area:main;aspect-ratio:4/5;align-self:stretch}
-.s-g{aspect-ratio:4/5}
-.s-g:nth-of-type(2){grid-area:g1}
-.s-g:nth-of-type(3){grid-area:g2}
-.s-main img,.s-g img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1.2s ease}
-@media(hover:hover){.s-main:hover img,.s-g:hover img{transform:scale(1.03)}}
-.s-main .count{right:8px;top:8px;padding:4px 8px;font-size:11px}
-.s-main .count svg{width:12px;height:12px}
 .credit{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);padding:4px 8px;border-radius:999px;background:rgba(9,9,11,.78);font-family:var(--varsity);font-size:11px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.s-body{grid-area:body;display:flex;flex-direction:column;justify-content:center;gap:12px;min-width:0;padding:18px 12px;background:var(--card)}
-.s-title{width:100%;container-type:inline-size}
-.s-body .p-num{margin-bottom:8px;font-size:12px}
-/* sized from the longest breakable part on phones (--ns) and the longest word on wide
-   screens (--n); a name only ever breaks at a space or at the SOFT points in build.py */
-.panel-name{margin:0;font-family:var(--varsity);font-weight:400;font-size:clamp(18px,calc(100cqi / (var(--ns) * .74)),128px);line-height:.92;letter-spacing:.01em;text-transform:uppercase;color:transparent;-webkit-text-stroke:1px #fff}
-.panel-name .w{white-space:nowrap}
-.s-models{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;width:100%}
-.s-models .model{position:relative;display:block;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:var(--stage)}
-.s-models .model img{width:100%;height:100%;object-fit:cover;transition:transform .8s ease}
-@media(hover:hover){.s-models .model:hover img{transform:scale(1.04)}}
-
-/* a garment no group has been photographed in yet: the model photo big, the name under it */
-.bare{grid-template-columns:minmax(0,1fr);grid-template-areas:"main" "body"}
-.bare .s-main{aspect-ratio:1/1;background:var(--stage)}
-.bare .s-body{flex-direction:row;align-items:center;gap:14px;padding:18px 16px}
-.bare .s-title{flex:1 1 0}
-.bare .panel-name{font-size:clamp(20px,calc(100cqi / (var(--n) * .74)),96px)}
-.bare .s-models{flex:none;width:auto;grid-auto-columns:76px}
-
-@media(min-width:600px){
-  .slide{flex-basis:calc(100% - 64px);gap:6px;border-radius:24px}
-  .s-body{padding:28px 22px}
-  .panel-name{-webkit-text-stroke:1.5px #fff}
-  .credit{left:14px;bottom:14px;padding:6px 11px;font-size:13px}
-  .s-main .count{right:14px;top:14px;padding:6px 11px;font-size:13px}
-  .s-models{gap:8px}
-  .s-models .model{border-radius:14px}
-  .bare .s-models{grid-auto-columns:110px}
-}
+@media(min-width:600px){.credit{left:14px;bottom:14px;padding:6px 11px;font-size:13px}}
 @media(min-width:720px){
   .car-head{padding:0 32px}
   .car-tabs{margin:-4px 0;padding:4px 0;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
   .car-arrows{display:flex}
-  .car-track{gap:24px;padding:0 32px;scroll-padding:0 32px}
-  .slide{flex-basis:calc(100% - 72px)}
+  .car-track{gap:16px;padding:0 32px;scroll-padding:0 32px}
 }
-/* a wide screen: the group big, the name and the model photo, the two more groups stacked */
-@media(min-width:900px){
-  .slide{height:clamp(520px,calc(100svh - 230px),720px);grid-template-columns:5fr 4fr 3fr;grid-template-rows:repeat(2,minmax(0,1fr));grid-template-areas:"main body g1" "main body g2";gap:8px}
-  .s-main,.s-g{aspect-ratio:auto}
-  .s-body{padding:44px clamp(28px,3vw,48px);gap:26px}
-  .s-body .p-num{font-size:15px;margin-bottom:14px}
-  .panel-name{font-size:clamp(30px,calc(100cqi / (var(--n) * .74)),112px)}
-  .s-models{max-width:360px}
-  .bare{grid-template-columns:7fr 5fr;grid-template-rows:minmax(0,1fr);grid-template-areas:"main body"}
-  .bare .s-main{aspect-ratio:auto}
-  .bare .s-body{flex-direction:column;align-items:stretch;justify-content:center}
-  .bare .s-title{flex:none}
-  .bare .panel-name{font-size:clamp(30px,calc(100cqi / (var(--n) * .74)),112px)}
-  .bare .s-models{grid-auto-columns:minmax(0,180px)}
-}
-/* the first slide lines up with the page, the next one peeks in from the right */
+/* the first card lines up with the page, the row runs on past the right edge */
 @media(min-width:1300px){
   .car-track{padding:0 max(32px,calc(50% - 588px));scroll-padding:0 max(32px,calc(50% - 588px))}
-  .slide{flex-basis:1176px}
 }
 
 /* the groups, edge to edge */
@@ -120,8 +60,9 @@
 }
 
 /* custom: one-off pieces made for a single group */
-.custom{padding:clamp(72px,11vw,150px) 16px clamp(56px,8vw,110px)}
-.custom-h{margin:0 0 clamp(18px,3vw,34px);font-family:var(--varsity);font-weight:400;font-size:clamp(52px,13vw,168px);line-height:.9;letter-spacing:.01em;text-align:center;text-transform:uppercase;color:transparent;-webkit-text-stroke:1.5px #fff}
+.custom{padding:clamp(24px,5vw,64px) 16px clamp(64px,9vw,120px)}
+.custom-h{display:flex;justify-content:center;margin:0 0 clamp(22px,3.4vw,40px);line-height:0;color:#fff}
+.custom-h .vname{--nh:clamp(52px,11vw,132px)}
 .cust-grid{display:grid;gap:12px;max-width:var(--wrap);margin:0 auto;padding:0;list-style:none}
 .cust{position:relative;display:block;width:100%;border-radius:var(--r);overflow:hidden;background:var(--card)}
 .cust img{width:100%;aspect-ratio:4/3;object-fit:cover;transition:transform 1.2s ease}

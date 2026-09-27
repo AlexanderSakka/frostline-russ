@@ -4,3 +4,6 @@ _source/model-photos/
 .DS_Store
 preview-*.html
 _source/logo-src/
+_source/product-shots/
+_source/fonts/
+__pycache__/

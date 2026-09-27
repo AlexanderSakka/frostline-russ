@@ -1,0 +1,106 @@
+/* The garments as products: the cards on the front page (and under each product page), and
+   a garment's own page (<id>.html). The names are Varsity outlines (_source/varsity.py), an
+   inline <svg class="vname"> sized by its letter height --nh and its aspect ratio --ar. */
+.vname{display:block;height:auto;width:min(100%,calc(var(--nh,34px) * var(--ar)));overflow:visible}
+
+/* ---------------------------------------------------------------- the cards */
+/* dark like the rest of the page: the garment cut out and floating in a soft light, the
+   name in white Varsity (its inline stripe is the card showing through), the jersey number */
+.pc{position:relative;flex:0 0 72vw;scroll-snap-align:start;display:flex;flex-direction:column;border-radius:22px;background:linear-gradient(180deg,#18181d,#101013);box-shadow:inset 0 0 0 1px #24242b;color:#fff;overflow:hidden;transition:box-shadow .3s ease}
+.pc-link{position:relative;display:flex;flex-direction:column;align-items:center;text-decoration:none;color:inherit}
+.pc-img{position:relative;display:block;width:100%;aspect-ratio:1/1;overflow:hidden}
+.pc-img::before{content:"";position:absolute;inset:0;background:radial-gradient(54% 50% at 50% 50%,rgba(255,255,255,.2),rgba(255,255,255,0) 72%);opacity:.62;transition:opacity .45s ease}
+.pc-img img{position:relative;width:100%;height:100%;object-fit:contain;padding:7% 7% 3%;filter:drop-shadow(0 18px 24px rgba(0,0,0,.55));transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.pc-num{position:absolute;left:16px;top:14px;z-index:1;font-family:var(--varsity);font-size:13px;letter-spacing:.08em;color:var(--muted)}
+@media(hover:hover){
+  .pc:hover{box-shadow:inset 0 0 0 1px #3a3a44}
+  .pc-link:hover .pc-img::before{opacity:1}
+  .pc-link:hover .pc-img img{transform:translateY(-6px) scale(1.035)}
+}
+.pc-name{display:flex;align-items:center;justify-content:center;width:100%;height:calc(var(--nh) + 6px);margin:0;padding:0 14px;line-height:0;--nh:26px}
+.pc-sw{display:flex;justify-content:center;gap:11px;padding:14px 16px 20px}
+.sw{position:relative;width:15px;height:15px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}
+.sw::after{content:"";position:absolute;inset:-5px;border-radius:50%;box-shadow:0 0 0 1.5px transparent;transition:box-shadow .2s}
+.sw.on::after{box-shadow:0 0 0 1.5px #fff}
+@media(min-width:600px){.pc{flex-basis:44vw}.pc-name{--nh:30px}}
+@media(min-width:900px){.pc{flex-basis:calc((100vw - 64px - 48px) / 3.2)}.pc-name{--nh:32px}.pc-sw{padding-bottom:24px}.pc-num{left:20px;top:18px}}
+@media(min-width:1300px){.pc{flex-basis:356px}}
+
+/* on the front page the cards stand in a row under the names; the one at the left edge
+   lights its name up top */
+.car-track{align-items:flex-start}
+.car-bare .car-head{justify-content:flex-end}
+
+/* ---------------------------------------------------------------- a garment's own page */
+.pp-page .bar{background:rgba(9,9,11,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--line)}
+.home{pointer-events:auto;margin-right:auto;display:block;line-height:0}
+.home img{height:15px;width:auto}
+@media(min-width:720px){.home img{height:18px}}
+.pp{padding:calc(var(--bar) + 18px) 0 0}
+.pp-top{display:grid;gap:22px}
+@media(min-width:900px){.pp-top{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:clamp(36px,5vw,76px);align-items:start;padding-top:18px}}
+
+/* the photos: one big, the rest as thumbnails (under it on a phone, beside it on a wide screen) */
+.pp-gal{display:grid;gap:10px;min-width:0}
+.pp-stage{position:relative;aspect-ratio:1/1;border-radius:22px;overflow:hidden;background:radial-gradient(56% 52% at 50% 50%,rgba(255,255,255,.14),rgba(255,255,255,0) 72%),linear-gradient(180deg,#18181d,#101013);box-shadow:inset 0 0 0 1px #24242b;touch-action:pan-y}
+.pp-img{position:relative;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 22px 30px rgba(0,0,0,.55));user-select:none;-webkit-user-drag:none}
+.pp-stage.is-model .pp-img{object-fit:cover;filter:none}
+/* navy and black need more light behind them to stand off the dark */
+.pp-stage.is-dark{background:radial-gradient(56% 52% at 50% 50%,rgba(255,255,255,.24),rgba(255,255,255,0) 74%),linear-gradient(180deg,#1a1a20,#111115)}
+.pp-arr{position:absolute;z-index:2;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:opacity .2s,background .2s}
+.pp-arr:hover{background:rgba(255,255,255,.24)}
+.pp-arr svg{width:18px;height:18px}
+.pp-arr[data-dir="-1"]{left:12px}
+.pp-arr[data-dir="1"]{right:12px}
+@media(hover:hover){.pp-arr{opacity:0}.pp-stage:hover .pp-arr,.pp-arr:focus-visible{opacity:1}}
+.pp-thumbs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.pp-thumbs::-webkit-scrollbar{display:none}
+.pp-th{flex:none;width:68px;aspect-ratio:1/1;border-radius:12px;overflow:hidden;background:radial-gradient(60% 55% at 50% 50%,rgba(255,255,255,.12),rgba(255,255,255,0) 75%),#141418;box-shadow:inset 0 0 0 1px #26262d;transition:box-shadow .2s}
+.pp-th img{width:100%;height:100%;object-fit:contain;padding:8%}
+.pp-th:last-child img{object-fit:cover;padding:0}
+.pp-th[aria-current="true"]{box-shadow:0 0 0 2px var(--bg),0 0 0 4px #fff}
+@media(hover:hover){.pp-th:hover{box-shadow:inset 0 0 0 1px #4a4a55}.pp-th[aria-current="true"]:hover{box-shadow:0 0 0 2px var(--bg),0 0 0 4px #fff}}
+@media(min-width:900px){
+  .pp-gal{grid-template-columns:76px minmax(0,1fr);gap:14px;align-items:start}
+  .pp-thumbs{order:-1;flex-direction:column;overflow:visible;padding:2px 0 0 2px}
+  .pp-th{width:72px}
+}
+
+/* the surname on the back, in Bebas Neue like the print; the box is set per garment from
+   build.py NAME_BOX (these numbers are the skole store's, the fallback) */
+.pp-name{position:absolute;left:32.3%;top:73.3%;width:35%;height:7.5%;display:flex;align-items:center;justify-content:center;font-family:"Bebas Neue","DM Sans",sans-serif;font-weight:400;line-height:1;color:#111;white-space:nowrap;pointer-events:none;z-index:1}
+.pp-name.ph{opacity:.38}
+.pp-name.lt{color:#fff;text-shadow:0 0 2px rgba(0,0,0,.35)}
+
+/* the name, the choices and the way to order */
+.pp-info{display:flex;flex-direction:column;gap:24px;min-width:0}
+@media(min-width:900px){.pp-info{position:sticky;top:calc(var(--bar) + 36px);padding-top:28px}}
+.pp-h{margin:0;line-height:0;color:#fff}
+.pp-h .vname{--nh:clamp(44px,6.4vw,76px)}
+.pp-lab{margin:0 0 12px;font-size:14px;color:var(--muted)}
+.pp-lab b{color:#fff;font-weight:700}
+.pp-sws{display:flex;flex-wrap:wrap;gap:14px}
+.pp-sw{width:36px;height:36px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);transition:box-shadow .2s}
+.pp-sw[aria-checked="true"]{box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 0 0 3px var(--bg),0 0 0 5px #fff}
+.pp-cuts{display:flex;gap:8px}
+.pp-pill{padding:11px 20px 10px;border-radius:999px;box-shadow:inset 0 0 0 1px #34343d;font-weight:700;font-size:15px;color:var(--soft);transition:background .2s,color .2s}
+.pp-pill[aria-checked="true"]{background:#fff;color:#09090b;box-shadow:none}
+.pp-field{position:relative;display:block}
+.pp-in{width:100%;height:56px;padding:0 70px 0 18px;border:0;border-radius:14px;background:var(--card);box-shadow:inset 0 0 0 1px #2e2e37;color:#fff;font:700 17px/1 "DM Sans",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;transition:box-shadow .2s}
+.pp-in::placeholder{color:var(--muted);letter-spacing:.02em;text-transform:none;font-weight:500}
+.pp-in:focus{outline:0;box-shadow:inset 0 0 0 1.5px #fff}
+.pp-count{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.pp-dm{width:100%}
+
+/* the groups wearing it */
+.pp-worn{padding:clamp(56px,8vw,104px) 0 0}
+.pp-wgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
+@media(min-width:720px){.pp-wgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}}
+@media(min-width:1100px){.pp-wgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.pp-wt{position:relative;display:block;width:100%;aspect-ratio:4/5;border-radius:14px;overflow:hidden;background:var(--card)}
+.pp-wt img{width:100%;height:100%;object-fit:cover;transition:transform 1s ease}
+@media(hover:hover){.pp-wt:hover img{transform:scale(1.04)}}
+@media(min-width:600px){.pp-wt .credit{left:12px;bottom:12px;padding:5px 10px;font-size:12px}}
+
+/* the other garments */
+.pp-more{padding:clamp(64px,9vw,120px) 0 clamp(64px,9vw,120px)}

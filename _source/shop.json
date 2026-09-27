@@ -1,0 +1,201 @@
+{
+ "_note": "Written by make_shop_images.py; do not edit.",
+ "colours": {
+  "gra": {
+   "name": "Grå",
+   "hex": "#d3d3d6",
+   "dark": false
+  },
+  "navy": {
+   "name": "Navy",
+   "hex": "#1f2745",
+   "dark": true
+  },
+  "svart": {
+   "name": "Svart",
+   "hex": "#141416",
+   "dark": true
+  },
+  "hvit": {
+   "name": "Hvit",
+   "hex": "#ffffff",
+   "dark": false
+  }
+ },
+ "garments": {
+  "zip-hoodie": [
+   {
+    "cut": "",
+    "colours": [
+     {
+      "k": "gra",
+      "front": "zip-hoodie-gra-front",
+      "back": "zip-hoodie-gra-back"
+     },
+     {
+      "k": "navy",
+      "front": "zip-hoodie-navy-front",
+      "back": "zip-hoodie-navy-back"
+     },
+     {
+      "k": "svart",
+      "front": "zip-hoodie-svart-front",
+      "back": "zip-hoodie-svart-back"
+     }
+    ]
+   }
+  ],
+  "hoodie": [
+   {
+    "cut": "",
+    "colours": [
+     {
+      "k": "gra",
+      "front": "hoodie-gra-front",
+      "back": "hoodie-gra-back"
+     },
+     {
+      "k": "navy",
+      "front": "hoodie-navy-front",
+      "back": "hoodie-navy-back"
+     },
+     {
+      "k": "svart",
+      "front": "hoodie-svart-front",
+      "back": "hoodie-svart-back"
+     }
+    ]
+   }
+  ],
+  "crewneck": [
+   {
+    "cut": "",
+    "colours": [
+     {
+      "k": "gra",
+      "front": "crewneck-gra-front",
+      "back": "crewneck-gra-back"
+     },
+     {
+      "k": "navy",
+      "front": "crewneck-navy-front",
+      "back": "crewneck-navy-back"
+     },
+     {
+      "k": "svart",
+      "front": "crewneck-svart-front",
+      "back": "crewneck-svart-back"
+     }
+    ]
+   }
+  ],
+  "bukse": [
+   {
+    "cut": "unisex",
+    "colours": [
+     {
+      "k": "gra",
+      "front": "bukse-unisex-gra-front",
+      "back": "bukse-unisex-gra-back"
+     },
+     {
+      "k": "navy",
+      "front": "bukse-unisex-navy-front",
+      "back": "bukse-unisex-navy-back"
+     },
+     {
+      "k": "svart",
+      "front": "bukse-unisex-svart-front",
+      "back": "bukse-unisex-svart-back"
+     }
+    ]
+   },
+   {
+    "cut": "dame",
+    "colours": [
+     {
+      "k": "gra",
+      "front": "bukse-dame-gra-front",
+      "back": "bukse-dame-gra-back"
+     },
+     {
+      "k": "navy",
+      "front": "bukse-dame-navy-front",
+      "back": "bukse-dame-navy-back"
+     },
+     {
+      "k": "svart",
+      "front": "bukse-dame-svart-front",
+      "back": "bukse-dame-svart-back"
+     }
+    ]
+   }
+  ],
+  "shorts": [
+   {
+    "cut": "unisex",
+    "colours": [
+     {
+      "k": "gra",
+      "front": "shorts-unisex-gra-front"
+     }
+    ]
+   },
+   {
+    "cut": "dame",
+    "colours": [
+     {
+      "k": "gra",
+      "front": "shorts-dame-gra-front"
+     }
+    ]
+   }
+  ],
+  "t-skjorte": [
+   {
+    "cut": "",
+    "colours": [
+     {
+      "k": "hvit",
+      "front": "t-skjorte-hvit-front",
+      "back": "t-skjorte-hvit-back"
+     }
+    ]
+   }
+  ],
+  "longsleeve": [
+   {
+    "cut": "",
+    "colours": [
+     {
+      "k": "hvit",
+      "front": "longsleeve-hvit-front",
+      "back": "longsleeve-hvit-back"
+     }
+    ]
+   }
+  ],
+  "singlet": [
+   {
+    "cut": "",
+    "colours": [
+     {
+      "k": "hvit",
+      "front": "singlet-hvit-front"
+     }
+    ]
+   }
+  ],
+  "collegejakke": [
+   {
+    "cut": "",
+    "colours": [
+     {
+      "k": "navy",
+      "front": "collegejakke-navy-front"
+     }
+    ]
+   }
+  ]
+ }
+}

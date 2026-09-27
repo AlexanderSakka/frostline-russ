@@ -21,41 +21,61 @@
     rail._upd=upd;upd();
   });
 
-  /* garments as slides (style b): swipe, the arrows, the arrow keys, or pick one by name;
-     the name of the slide in view lights up */
+  /* garments as cards in a row (style b, and under each garment's page): swipe, the arrows
+     (a screenful at a time), the arrow keys, or pick one by name; the name of the card at
+     the left edge lights up */
   document.querySelectorAll('[data-car]').forEach(function(car){
-    var track=car.querySelector('.car-track'),slides=[].slice.call(track.querySelectorAll('.slide')),
+    var track=car.querySelector('.car-track'),items=[].slice.call(track.children),
         tabRow=car.querySelector('.car-tabs'),tabs=[].slice.call(car.querySelectorAll('.car-tab')),
-        arr=car.querySelectorAll('.car-arr'),cur=-1,raf=0;
-    if(!slides.length)return;
+        arr=car.querySelectorAll('.car-arr'),cur=-1,pin=-1,raf=0;
+    if(!items.length)return;
     function padL(){return parseFloat(getComputedStyle(track).scrollPaddingLeft)||0;}
+    function end(){return track.scrollWidth-track.clientWidth;}
+    function x(k){return Math.min(items[k].offsetLeft-padL(),end());}
     function go(k,instant){
-      k=Math.max(0,Math.min(slides.length-1,k));
-      track.scrollTo({left:slides[k].offsetLeft-padL(),behavior:instant?'auto':'smooth'});
+      k=Math.max(0,Math.min(items.length-1,k));
+      track.scrollTo({left:x(k),behavior:instant?'auto':'smooth'});
     }
+    function page(){var w=items[0].offsetWidth+(parseFloat(getComputedStyle(track).columnGap)||0);return Math.max(1,Math.floor((track.clientWidth-padL())/w));}
     function mark(){
-      raf=0;var x=track.scrollLeft+padL(),best=0,bd=Infinity;
-      slides.forEach(function(s,k){var d=Math.abs(s.offsetLeft-x);if(d<bd){bd=d;best=k;}});
+      raf=0;var at=track.scrollLeft,best=0,bd=Infinity;
+      items.forEach(function(s,k){var d=Math.abs(x(k)-at);if(d<bd){bd=d;best=k;}});
+      // a name picked up top stays lit when its card can only get as far as the row's end
+      if(pin>=0&&Math.abs(x(pin)-at)<4)best=pin;
+      if(arr.length===2){arr[0].disabled=at<=2;arr[1].disabled=at>=end()-2;}
       if(best===cur)return;cur=best;
       tabs.forEach(function(t,k){t.setAttribute('aria-current',k===cur?'true':'false');});
-      slides.forEach(function(s,k){s.classList.toggle('on',k===cur);});
       var t=tabs[cur];
       if(t&&tabRow.scrollWidth>tabRow.clientWidth)tabRow.scrollTo({left:t.offsetLeft-(tabRow.clientWidth-t.offsetWidth)/2,behavior:'smooth'});
-      if(arr.length===2){arr[0].disabled=cur===0;arr[1].disabled=cur===slides.length-1;}
     }
     track.addEventListener('scroll',function(){if(!raf)raf=requestAnimationFrame(mark);},{passive:true});
+    ['pointerdown','wheel','touchstart'].forEach(function(ev){track.addEventListener(ev,function(){pin=-1;},{passive:true});});
     window.addEventListener('resize',function(){if(cur>=0)go(cur,true);});
-    tabs.forEach(function(t,k){t.addEventListener('click',function(e){e.preventDefault();go(k);});});
-    arr.forEach(function(b){b.addEventListener('click',function(){go(cur+(+b.getAttribute('data-dir')));});});
+    tabs.forEach(function(t,k){t.addEventListener('click',function(e){e.preventDefault();pin=k;go(k);});});
+    arr.forEach(function(b){b.addEventListener('click',function(){pin=-1;go(cur+(+b.getAttribute('data-dir'))*page());});});
     track.addEventListener('keydown',function(e){
       if(e.target!==track)return;
-      if(e.key==='ArrowRight'){e.preventDefault();go(cur+1);}else if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+      if(e.key==='ArrowRight'){e.preventDefault();pin=-1;go(cur+1);}else if(e.key==='ArrowLeft'){e.preventDefault();pin=-1;go(cur-1);}
     });
     function fromHash(){
       var id=decodeURIComponent(location.hash.slice(1));
-      for(var k=0;k<slides.length;k++)if(slides[k].id===id){go(k,true);car.scrollIntoView({block:'start'});return;}
+      for(var k=0;k<items.length;k++)if(items[k].id===id){pin=k;go(k,true);car.scrollIntoView({block:'start'});return;}
     }
     mark();fromHash();window.addEventListener('hashchange',fromHash);car.classList.add('ready');
+  });
+
+  /* a card's colour dots: pointing at one shows the garment in that colour, and the card
+     then opens its page in that colour */
+  document.querySelectorAll('.pc').forEach(function(c){
+    var im=c.querySelector('.pc-im'),link=c.querySelector('.pc-link'),dots=[].slice.call(c.querySelectorAll('.sw'));
+    dots.forEach(function(d){
+      function pick(){
+        if(im&&im.getAttribute('src')!==d.getAttribute('data-src')){im.srcset=d.getAttribute('data-srcset');im.src=d.getAttribute('data-src');}
+        dots.forEach(function(o){o.classList.toggle('on',o===d);});
+        if(link)link.href=d.getAttribute('href');
+      }
+      d.addEventListener('pointerenter',pick);d.addEventListener('focus',pick);
+    });
   });
 
   /* index rows (style c): open from a link, and wake the rows inside when opened */

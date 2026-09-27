@@ -6,10 +6,15 @@
 Three styles share the same data, images, style.css and app.js:
   a  Lookbook   the logo, then every garment as a tile that turns into a group wearing it
   b  Kampanje   a wall of group photos behind the logo with the groups' chest logos running
-                underneath, the garments as slides you swipe or pick by name, the custom pieces
+                underneath, the garments as product cards you swipe or pick by name, the
+                custom pieces, then the groups
   c  Indeks     a black index you open garment by garment, the groups as a name list
 
-Each garment opens a lightbox: its model photo(s) first, then the groups wearing it.
+In a and c a garment opens a lightbox: its model photo(s) first, then the groups wearing it.
+In b a garment card opens that garment's own page, <id>.html (russ.frostlinenorge.no/hoodie):
+its product photos in each colour, the surname drawn on the back for the garments that
+carry one, then the groups wearing it. The product photos and their colours come from
+shop.json (make_shop_images.py), the names are drawn in Varsity (varsity.py).
 index.html is the site. The styles listed in site.json "published" are also written as
 <style>.html (russ.frostlinenorge.no/a, /b) so they can be compared on the real domain;
 those carry noindex and point canonical at the front page. preview-a/b/c.html are the
@@ -20,6 +25,8 @@ from PIL import Image, ImageOps
 
 S = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.dirname(S)
+sys.path.insert(0, S)
+from varsity import svg as varsity  # noqa: E402
 E = html.escape
 IG = 'https://www.instagram.com/frostlineno/'
 DM = 'https://ig.me/m/frostlineno'
@@ -64,6 +71,24 @@ for g in groups:
 for p in PRODUCTS:
     p['worn_imgs'] = [{'b': b, 'w': dims(b)[0], 'h': dims(b)[1], 'g': group_of[b.split('-')[0]]} for b in p['worn']]
 N_GROUPS = len(GROUPS)
+
+# the product photos per garment: its cuts (bukse and shorts: unisex, dame), per cut its
+# colours, per colour a front and maybe a back (make_shop_images.py)
+SHOP = json.load(open(f'{S}/shop.json'))
+COLOURS = SHOP['colours']
+CUT_NAME = {'unisex': 'Unisex', 'dame': 'Dame'}
+# Where the surname goes on a back photo, in % of the square frame: left, top, width, height.
+# The type is as tall as the box and shrinks only when a long name reaches its width, so the
+# box is as wide as the back allows with a hand's width of clear fabric to each side seam
+# (the grey backs, the narrowest, have their seams at about 27.5 and 72.7 % of the frame at
+# this height, the sleeves hanging right beside them), and its bottom stays above the ribbed
+# hem (zip 86 %, hoodie 85 %). Bigger than the skole store's 35 x 7.5 box: BURUM-AUENSEN read
+# too small there (Alexander, 2026-09-27). 44 % wide was tried and ran seam to seam.
+NAME_BOX = {'zip-hoodie': (30, 72, 40, 10), 'hoodie': (31.3, 72, 38, 10)}
+for p in PRODUCTS:
+    p['cuts'] = SHOP['garments'][p['id']]
+    # a colour once, in the order the cuts show them (the card's swatches)
+    p['colours'] = list(dict.fromkeys(c['k'] for cut in p['cuts'] for c in cut['colours']))
 
 # one-off pieces made for a single group (custom.json), photos in img/c/
 CUSTOM = json.load(open(f'{S}/custom.json'))['custom']
@@ -208,46 +233,53 @@ def logo_h1(extra=''):
             f'width="1800" height="249" fetchpriority="high"></h1>')
 
 
-def head(style, preview):
+def head(style, preview, title=TITLE, desc=DESC, url=URL, og=('assets/og.jpg', 1200, 630), ld=LD,
+         css=(), fonts='', body='', home=False, skip='#produkter'):
+    """The top of a page up to the bar. The front page takes the defaults; a product page
+    passes its own title, description, address, link-preview picture and JSON-LD, shop.css
+    and Bebas Neue (the surname), and a bar with the logo going home."""
     robots = '<meta name="robots" content="noindex">\n' if preview else ''
+    styles = ''.join(f'<link rel="stylesheet" href="{c}?v={version(c)}">\n' for c in ('style.css', f'v-{style}.css') + tuple(css))
+    preload = '' if home else '<link rel="preload" as="image" href="assets/frostline-logo-outline.webp" fetchpriority="high">\n'
+    logo = ('<a class="home" href="./" aria-label="Frostline, til forsiden">'
+            '<img src="assets/frostline-logo-white.png" alt="Frostline" width="992" height="142"></a>\n') if home else ''
     return f'''<!DOCTYPE html>
 <html lang="nb">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{TITLE}</title>
-<meta name="description" content="{E(DESC)}">
-{robots}<link rel="canonical" href="{URL}">
+<title>{E(title)}</title>
+<meta name="description" content="{E(desc)}">
+{robots}<link rel="canonical" href="{url}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Frostline">
-<meta property="og:title" content="{TITLE}">
-<meta property="og:description" content="{E(DESC)}">
-<meta property="og:image" content="{URL}assets/og.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="{URL}">
+<meta property="og:title" content="{E(title)}">
+<meta property="og:description" content="{E(desc)}">
+<meta property="og:image" content="{URL}{og[0]}">
+<meta property="og:image:width" content="{og[1]}">
+<meta property="og:image:height" content="{og[2]}">
+<meta property="og:url" content="{url}">
 <meta property="og:locale" content="nb_NO">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#09090b">
 <link rel="icon" href="assets/favicon.png?v={version('assets/favicon.png')}" type="image/png" sizes="96x96">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v={version('assets/apple-touch-icon.png')}">
-<link rel="preload" as="image" href="assets/frostline-logo-outline.webp" fetchpriority="high">
-<link rel="preconnect" href="https://fonts.googleapis.com">
+{preload}<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,700;9..40,800&family=Graduate&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v={version('style.css')}">
-<link rel="stylesheet" href="v-{style}.css?v={version(f'v-{style}.css')}">
-<script type="application/ld+json">{json.dumps(LD, ensure_ascii=False, separators=(',', ':'))}</script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,700;9..40,800&family=Graduate{fonts}&display=swap" rel="stylesheet">
+{styles}<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False, separators=(',', ':'))}</script>
 </head>
-<body class="v-{style}">
-<a class="skip" href="#produkter">Hopp til plaggene</a>
+<body class="v-{style}{' ' + body if body else ''}">
+<a class="skip" href="{skip}">Hopp til innholdet</a>
 <header class="bar"><div class="bar-in">
-<a class="dm" href="{DM}" target="_blank" rel="noopener" aria-label="Send oss en DM på Instagram">{ICON_IG}<span>DM</span></a>
+{logo}<a class="dm" href="{DM}" target="_blank" rel="noopener" aria-label="Send oss en DM på Instagram">{ICON_IG}<span>DM</span></a>
 </div></header>
 '''
 
 
-def tail():
+def tail(data=None, scripts=()):
+    """Contact, footer, the lightbox and the scripts. data: the lightbox sets this page opens."""
+    js = ''.join(f'<script src="{s}?v={version(s)}"></script>\n' for s in ('app.js',) + tuple(scripts))
     return f'''<section class="ig" id="kontakt" aria-labelledby="ig-h">
 <h2 class="sr" id="ig-h">Kontakt oss på Instagram</h2>
 <a class="handle" href="{IG}" target="_blank" rel="noopener">@frostlineno</a>
@@ -263,9 +295,8 @@ def tail():
 <button class="lb-next" type="button" aria-label="Neste">&#8250;</button>
 <figure class="lb-fig"><img id="lb-img" alt=""><figcaption id="lb-cap"></figcaption></figure>
 </div>
-<script id="data" type="application/json">{json.dumps(DATA, ensure_ascii=False, separators=(',', ':'))}</script>
-<script src="app.js?v={version('app.js')}"></script>
-</body>
+<script id="data" type="application/json">{json.dumps(DATA if data is None else data, ensure_ascii=False, separators=(',', ':'))}</script>
+{js}</body>
 </html>
 '''
 
@@ -326,23 +357,6 @@ def mosaic():
     return wall.size
 
 
-# Where a long name may break when its half of a phone screen is too narrow for it.
-SOFT = {'crewneck': 'Crew­neck', 'longsleeve': 'Long­sleeve', 'collegejakke': 'College­jakke'}
-
-
-def panel_name(name):
-    """The outlined name, sized by CSS from its longest word (--n, wide screens) or its
-    longest breakable part (--ns, phones). A hard hyphen never breaks (T-skjorte)."""
-    shown, n, ns = [], 0, 0
-    for w in name.split():
-        n = max(n, len(w))
-        parts = SOFT.get(w.lower(), w).split('­')
-        ns = max([ns] + [len(x) + (k < len(parts) - 1) for k, x in enumerate(parts)])
-        s = '&shy;'.join(E(x) for x in parts)
-        shown.append(f'<span class="w">{s}</span>' if '-' in w else s)
-    return f'<h3 class="panel-name" style="--n:{n};--ns:{ns}">{" ".join(shown)}</h3>'
-
-
 def logo_ticker():
     """The groups' chest logos running under the hero, twice over so the loop has no seam.
     Each opens that group's photos. Like the photo wall behind the logo they carry data-src,
@@ -363,39 +377,72 @@ def credit(name):
     return f'<span class="credit">{E(name)}</span>'
 
 
-def slide(p, pi):
-    """One garment: a group wearing it, the outlined name and the model photo(s), then two
-    more groups. A garment no group has been photographed in yet leads with its model
-    photo, and its other cut (if any) sits beside the name."""
-    n = len(PRODUCTS)
-    worn = p['worn_imgs']
-    first = len(p['photos'])  # the lightbox shows the model photos first, then the groups
-    if worn:
-        main = (f'<button class="s-main" type="button" data-s="p{pi}" data-i="{first}" aria-label="{E(open_label(p))}">'
-                + photo(worn[0]['b'], f"Russegruppa {worn[0]['g']} i {p['lname']} fra Frostline",
-                        '(min-width: 900px) 520px, 46vw', large=True)
-                + credit(worn[0]['g']) + count(p) + '</button>')
-        cuts = list(range(len(p['photos'])))
-    else:
-        main = (f'<button class="s-main" type="button" data-s="p{pi}" data-i="0" aria-label="{E(open_label(p))}">'
-                + model_img(p, 0, '(min-width: 900px) 700px, 90vw') + count(p) + '</button>')
-        cuts = list(range(1, len(p['photos'])))
-    models = ''.join(
-        f'<button class="model" type="button" data-s="p{pi}" data-i="{k}" aria-label="{E(model_alt(p, p["photos"][k][1]))}">'
-        + model_img(p, k, '(min-width: 900px) 180px, 20vw' if len(cuts) > 1 or not worn else '(min-width: 900px) 340px, 40vw')
-        + '</button>'
-        for k in cuts)
-    more = ''.join(
-        f'<button class="s-g" type="button" data-s="p{pi}" data-i="{first + k}" aria-label="{E(im["g"])}, bilde {first + k + 1}">'
-        + photo(im['b'], f"Russegruppa {im['g']} i {p['lname']} fra Frostline", '(min-width: 900px) 320px, 46vw')
-        + credit(im['g']) + '</button>'
-        for k, im in list(enumerate(worn))[1:3])
-    return f'''<article class="slide{'' if worn else ' bare'}" id="{p['id']}" aria-label="{pi + 1} av {n}: {E(p['name'])}">
-{main}
-<div class="s-body"><div class="s-title"><p class="p-num">{pi + 1:02d}<span> / {n:02d}</span></p>
-{panel_name(p['name'])}</div>{f'<div class="s-models">{models}</div>' if models else ''}</div>
-{more}
-</article>'''
+def shop_src(name, w):
+    """A product photo's URL, stamped with its content like the model photos."""
+    f = f'img/shop/{name}-{w}.webp'
+    return f'{f}?v={version(f)}'
+
+
+def shop_srcset(name):
+    return f'{shop_src(name, 600)} 600w, {shop_src(name, 1200)} 1200w'
+
+
+def shop_img(name, sizes, alt, cls='', eager=False):
+    """A garment on white, img/shop/<name>-{600,1200}.webp (make_shop_images.py)."""
+    load = ' fetchpriority="high"' if eager else ' loading="lazy"'
+    c = f' class="{cls}"' if cls else ''
+    return (f'<img{c} src="{shop_src(name, 600)}" srcset="{shop_srcset(name)}" sizes="{sizes}" width="1200" '
+            f'height="1200" alt="{E(alt)}"{load} decoding="async">')
+
+
+def cname(k):
+    return COLOURS[k]['name']
+
+
+def shop_alt(p, k, view='front', cut=''):
+    side = {'front': 'forfra', 'back': 'bakfra'}[view]
+    return f"{p['name']}{' ' + cut if cut else ''} fra Frostline i {cname(k).lower()}, {side}"
+
+
+CARD_SIZES = '(min-width: 1300px) 360px, (min-width: 900px) 30vw, (min-width: 600px) 44vw, 72vw'
+
+
+def card(p):
+    """A garment as a product card: its photo on white, the name in Varsity, a dot per colour.
+    The card opens the garment's page. Pointing at a dot shows that colour on the card, and
+    the dot itself opens the page in that colour (<id>#navy)."""
+    front = {}
+    for cut in p['cuts']:  # a colour the first cut lacks comes from the next cut that has it
+        for c in cut['colours']:
+            front.setdefault(c['k'], c['front'])
+    k0 = p['colours'][0]
+    dots = ''.join(
+        f'<a class="sw{" on" if k == k0 else ""}" href="{p["id"]}#{k}" style="--c:{COLOURS[k]["hex"]}" '
+        f'data-src="{shop_src(front[k], 600)}" data-srcset="{shop_srcset(front[k])}" '
+        f'aria-label="{E(p["name"])} i {cname(k).lower()}"></a>'
+        for k in p['colours'])
+    img = shop_img(front[k0], CARD_SIZES, shop_alt(p, k0), cls='pc-im')
+    num = PRODUCTS.index(p) + 1
+    return (f'<article class="pc" id="{p["id"]}"><a class="pc-link" href="{p["id"]}">'
+            f'<span class="pc-num" aria-hidden="true">{num:02d}</span><span class="pc-img">{img}</span>'
+            f'<h3 class="pc-name">{varsity(p["name"])}<span class="sr">{E(p["name"])}</span></h3></a>'
+            f'<div class="pc-sw">{dots}</div></article>')
+
+
+def cards_row(items, tabs=True):
+    """Garment cards in a row you swipe or step through with the arrows; on the front page
+    the names run above it and take you to a card."""
+    head = ''
+    if tabs:
+        head = ('<nav class="car-tabs" aria-label="Plaggene">'
+                + ''.join(f'<a class="car-tab" href="#{p["id"]}" aria-current="{"true" if k == 0 else "false"}">{E(p["name"])}</a>'
+                          for k, p in enumerate(items)) + '</nav>')
+    arrows = ''.join(f'<button class="car-arr" type="button" data-dir="{d}" aria-label="{"Forrige" if d < 0 else "Neste"} plagg">{CHEV[d]}</button>'
+                     for d in (-1, 1))
+    return (f'<div class="car{"" if tabs else " car-bare"}" data-car>\n'
+            f'<div class="car-head">{head}<div class="car-arrows">{arrows}</div></div>\n'
+            f'<div class="car-track" tabindex="0" aria-label="Plaggene, sveip for flere">\n'
+            + '\n'.join(card(p) for p in items) + '\n</div>\n</div>')
 
 
 def custom_b():
@@ -409,7 +456,7 @@ def custom_b():
         + credit(c['group']) + '</button></li>'
         for ci, c in enumerate(CUSTOM))
     return f'''<section class="custom" id="custom" aria-labelledby="c-h">
-<h2 class="custom-h" id="c-h">Custom</h2>
+<h2 class="custom-h" id="c-h">{varsity('Custom')}<span class="sr">Custom</span></h2>
 <ul class="cust-grid{' one' if len(CUSTOM) == 1 else ''}">{items}</ul>
 </section>
 '''
@@ -417,13 +464,9 @@ def custom_b():
 
 def body_b():
     """The logo over a wall of the groups, their chest logos running underneath; the
-    garments as slides you swipe or pick by name; the groups edge to edge; the custom
-    pieces last."""
+    garments as product cards you swipe or pick by name, each opening its own page; the
+    custom pieces; the groups edge to edge."""
     mw, mh = mosaic()
-    tabs = ''.join(f'<a class="car-tab" href="#{p["id"]}" aria-current="{"true" if pi == 0 else "false"}">{E(p["name"])}</a>'
-                   for pi, p in enumerate(PRODUCTS))
-    arrows = ''.join(f'<button class="car-arr" type="button" data-dir="{d}" aria-label="{"Forrige" if d < 0 else "Neste"} plagg">{CHEV[d]}</button>'
-                     for d in (-1, 1))
     return f'''<main>
 <section class="hero hero-b" id="top">
 <img class="hero-bg" data-src="assets/mosaic.jpg?v={version('assets/mosaic.jpg')}" alt="" width="{mw}" height="{mh}" decoding="async">
@@ -434,18 +477,127 @@ def body_b():
 </section>
 <section class="shop" id="produkter" aria-labelledby="p-h">
 <h2 class="sr" id="p-h">Russeklær</h2>
-<div class="car" data-car>
-<div class="car-head"><nav class="car-tabs" aria-label="Plaggene">{tabs}</nav><div class="car-arrows">{arrows}</div></div>
-<div class="car-track" tabindex="0" aria-label="Plaggene, sveip for neste">
-{''.join(slide(p, pi) for pi, p in enumerate(PRODUCTS))}
-</div>
-</div>
+{cards_row(PRODUCTS)}
 </section>
-<section class="groups-b" id="grupper" aria-labelledby="g-h">
+{custom_b()}<section class="groups-b" id="grupper" aria-labelledby="g-h">
 <h2 class="sr" id="g-h">Russegruppene</h2>
 <ul class="wall">{group_cards('(min-width: 1280px) 15vw, (min-width: 720px) 25vw, 50vw', 'wcard')}</ul>
 </section>
-{custom_b()}'''
+'''
+
+
+# ---------------------------------------------------------------- a garment's own page
+def and_list(words):
+    return words[0] if len(words) == 1 else ', '.join(words[:-1]) + ' og ' + words[-1]
+
+
+def product_page(p):
+    """<id>.html: the garment's photos on white (front, back, on a model) in the colour and
+    cut picked beside them, the name in Varsity, for a hoodie or zip hoodie a surname field
+    drawn live on the back (pp.js), the DM; then the groups wearing it, then the other
+    garments."""
+    pid, name = p['id'], p['name']
+    url = f'{URL}{pid}'
+    navn = bool(p.get('navn'))
+    model_k = {cut.lower(): k for k, (_, cut) in enumerate(p['photos'])}
+
+    def pic(n, w_alt):
+        return {'s': shop_src(n, 1200), 'ss': shop_srcset(n), 'alt': w_alt}
+
+    cuts = []
+    for cut in p['cuts']:
+        k = model_k.get(cut['cut'], 0)
+        mid, mcut = p['photos'][k]
+        cuts.append({
+            'k': cut['cut'], 'label': CUT_NAME.get(cut['cut'], ''),
+            'model': {'s': model_src(mid, 1000), 'ss': f'{model_src(mid, 600)} 600w, {model_src(mid, 1000)} 1000w',
+                      'alt': model_alt(p, mcut)},
+            'colours': [{'k': c['k'], 'name': cname(c['k']), 'dark': COLOURS[c['k']]['dark'], 'hex': COLOURS[c['k']]['hex'],
+                         'front': pic(c['front'], shop_alt(p, c['k'], 'front', CUT_NAME.get(cut['cut'], '').lower())),
+                         'back': pic(c['back'], shop_alt(p, c['k'], 'back', CUT_NAME.get(cut['cut'], '').lower())) if 'back' in c else None}
+                        for c in cut['colours']]})
+    c0 = cuts[0]['colours'][0]
+    views = [('front', c0['front'])] + ([('back', c0['back'])] if c0['back'] else []) + [('model', cuts[0]['model'])]
+    sizes_main = '(min-width: 1240px) 640px, (min-width: 900px) 52vw, 100vw'
+    stage = (f'<img class="pp-img" id="pp-img" src="{c0["front"]["s"]}" srcset="{c0["front"]["ss"]}" sizes="{sizes_main}" '
+             f'width="1200" height="1200" alt="{E(c0["front"]["alt"])}" fetchpriority="high">')
+    thumbs = ''.join(
+        f'<button class="pp-th" type="button" data-v="{k}" aria-label="{E(v["alt"])}" aria-current="{"true" if k == 0 else "false"}">'
+        f'<img src="{v["ss"].split(" ")[0]}" alt="" width="120" height="120" loading="lazy" decoding="async"></button>'
+        for k, (_, v) in enumerate(views))
+    cut_pills = ''
+    if len(cuts) > 1:
+        cut_pills = ('<div class="pp-cuts" role="radiogroup" aria-label="Snitt">'
+                     + ''.join(f'<button class="pp-pill" type="button" role="radio" data-cut="{k}" '
+                               f'aria-checked="{"true" if k == 0 else "false"}">{E(c["label"])}</button>'
+                               for k, c in enumerate(cuts)) + '</div>')
+    swatches = ''.join(
+        f'<button class="pp-sw" type="button" role="radio" data-col="{k}" style="--c:{c["hex"]}" '
+        f'aria-checked="{"true" if k == 0 else "false"}" aria-label="{E(c["name"])}"></button>'
+        for k, c in enumerate(cuts[0]['colours']))
+    field = ''
+    if navn:
+        field = ('<label class="pp-field"><span class="sr">Etternavn på ryggen</span>'
+                 '<input class="pp-in" id="pp-in" type="text" maxlength="18" placeholder="Etternavn" autocomplete="off" '
+                 'autocapitalize="characters" spellcheck="false" enterkeyhint="done">'
+                 '<span class="pp-count" id="pp-count" aria-hidden="true">0/18</span></label>')
+    worn = p['worn_imgs']
+    worn_html = ''
+    if worn:
+        tiles = ''.join(
+            f'<li><button class="pp-wt" type="button" data-s="w" data-i="{k}" aria-label="{E(im["g"])}, bilde {k + 1} av {len(worn)}">'
+            + photo(im['b'], f"Russegruppa {im['g']} i {p['lname']} fra Frostline", '(min-width: 1100px) 290px, (min-width: 720px) 31vw, 48vw')
+            + credit(im['g']) + '</button></li>'
+            for k, im in enumerate(worn))
+        worn_html = (f'<section class="pp-worn" aria-labelledby="w-h">\n<div class="wrap">\n'
+                     f'<h2 class="sr" id="w-h">Russegrupper i {E(p["lname"])} fra Frostline</h2>\n'
+                     f'<ul class="pp-wgrid">{tiles}</ul>\n</div>\n</section>\n')
+    others = [q for q in PRODUCTS if q['id'] != pid]
+    data = {'n': name, 'navn': navn, 'box': NAME_BOX.get(pid), 'cuts': cuts}
+
+    colours = and_list([cname(k).lower() for k in p['colours']])
+    cut_names = [CUT_NAME.get(c['cut'], '') for c in p['cuts']]
+    lead = (and_list([cut_names[0] + '-'] + [c.lower() + '-' for c in cut_names[1:]])[:-1] + 'modell i'
+            if len(cut_names) > 1 else 'Finnes i')
+    desc = (f"{name} fra Frostline med russegruppas eget trykk" + (' og etternavnet ditt på ryggen' if navn else '')
+            + f". {lead} {colours}. Send oss en DM på Instagram @frostlineno.")
+    img0 = p['cuts'][0]['colours'][0]['front']
+    ld = {'@context': 'https://schema.org', '@graph': [
+        {'@type': 'WebPage', '@id': url + '#page', 'url': url, 'name': f'{name} | Frostline', 'inLanguage': 'nb-NO',
+         'description': desc, 'isPartOf': {'@id': URL + '#site'}, 'about': {'@id': URL + '#org'},
+         'primaryImageOfPage': {'@type': 'ImageObject', 'url': f'{URL}img/shop/{img0}-og.jpg', 'width': 1200, 'height': 1200},
+         'breadcrumb': {'@id': url + '#crumbs'}},
+        {'@type': 'BreadcrumbList', '@id': url + '#crumbs', 'itemListElement': [
+            {'@type': 'ListItem', 'position': 1, 'name': 'Frostline', 'item': URL},
+            {'@type': 'ListItem', 'position': 2, 'name': name, 'item': url}]},
+    ]}
+    top = head('b', False, title=f'{name} | Frostline', desc=desc, url=url, og=(f'img/shop/{img0}-og.jpg', 1200, 1200),
+               ld=ld, css=('shop.css',), fonts='&family=Bebas+Neue' if navn else '', body='pp-page', home=True, skip='#produkt')
+    body = f'''<main>
+<section class="pp" id="produkt" aria-labelledby="pp-h">
+<div class="wrap pp-top">
+<div class="pp-gal">
+<div class="pp-stage" id="pp-stage">{stage}<span class="pp-name" id="pp-name" hidden></span>
+<button class="pp-arr" type="button" data-dir="-1" aria-label="Forrige bilde">{CHEV[-1]}</button>
+<button class="pp-arr" type="button" data-dir="1" aria-label="Neste bilde">{CHEV[1]}</button></div>
+<div class="pp-thumbs" id="pp-thumbs">{thumbs}</div>
+</div>
+<div class="pp-info">
+<h1 class="pp-h" id="pp-h">{varsity(name)}<span class="sr">{E(name)}</span></h1>
+{cut_pills}<div class="pp-opt"><p class="pp-lab" id="pp-lab">Farge: <b id="pp-cn">{E(c0['name'])}</b></p>
+<div class="pp-sws" id="pp-sws" role="radiogroup" aria-labelledby="pp-lab">{swatches}</div></div>
+{field}<a class="btn pp-dm" href="{DM}" target="_blank" rel="noopener">{ICON_IG}<span>Send DM</span></a>
+</div>
+</div>
+<script id="pp-data" type="application/json">{json.dumps(data, ensure_ascii=False, separators=(',', ':'))}</script>
+</section>
+{worn_html}<section class="pp-more" aria-labelledby="m-h">
+<h2 class="sr" id="m-h">Flere plagg fra Frostline</h2>
+{cards_row(others, tabs=False)}
+</section>
+'''
+    lb = {'s': {'w': {'t': name, 'k': 'p', 'imgs': worn}}}
+    return top + body + tail(lb, ('pp.js',))
 
 
 # ---------------------------------------------------------------- c: Indeks
@@ -505,7 +657,7 @@ BODIES = {'a': body_a, 'b': body_b, 'c': body_c}
 
 
 def page(style, preview=False):
-    return head(style, preview) + BODIES[style]() + tail()
+    return head(style, preview, css=('shop.css',) if style == 'b' else ()) + BODIES[style]() + tail()
 
 
 for s in STYLES:
@@ -518,19 +670,30 @@ for s in STYLES:
         os.remove(f'{SITE}/{s}.html')
 live = page(site['live'])
 open(f'{SITE}/index.html', 'w').write(live)
+# every garment's own page (the cards of style b open them)
+pages = {p['id']: product_page(p) for p in PRODUCTS}
+for pid, h in pages.items():
+    open(f'{SITE}/{pid}.html', 'w').write(h)
 
 today = datetime.date.today().isoformat()
-# the front page and every picture on it that says what it shows (the photos of groups in
-# their garments, the model photos), so image search can find them too
-pics = []
-for src in re.findall(r'<img[^>]*?\ssrc="([^"]+)"[^>]*?\salt="([^"]+)"', live):
-    if not src[0].startswith('assets/') and src[0] not in pics:
-        pics.append(src[0])
-images = ''.join(f'<image:image><image:loc>{E(URL + s)}</image:loc></image:image>' for s in pics)
+
+
+def pictures(h):
+    """Every picture on a page that says what it shows (the groups in their garments, the
+    garments on white and on a model), so image search can find them too."""
+    pics = []
+    for src in re.findall(r'<img[^>]*?\ssrc="([^"]+)"[^>]*?\salt="([^"]+)"', h):
+        if not src[0].startswith('assets/') and src[0] not in pics:
+            pics.append(src[0])
+    return ''.join(f'<image:image><image:loc>{E(URL + s)}</image:loc></image:image>' for s in pics)
+
+
+urls = [(URL, live)] + [(URL + pid, h) for pid, h in pages.items()]
 open(f'{SITE}/sitemap.xml', 'w').write(
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
     'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
-    f'<url><loc>{URL}</loc><lastmod>{today}</lastmod>{images}</url>\n</urlset>\n')
+    + ''.join(f'<url><loc>{u}</loc><lastmod>{today}</lastmod>{pictures(h)}</url>\n' for u, h in urls)
+    + '</urlset>\n')
 open(f'{SITE}/robots.txt', 'w').write(f'User-agent: *\nAllow: /\nDisallow: /_source/\nDisallow: /preview-\nSitemap: {URL}sitemap.xml\n')
 open(f'{SITE}/CNAME', 'w').write(URL.split('/')[2] + '\n')
 
@@ -556,5 +719,5 @@ elif os.path.exists(f'{SITE}/404.html'):
     os.remove(f'{SITE}/404.html')
 
 n_imgs = sum(len(g['imgs']) for g in GROUPS)
-print(f"live style {site['live']}, garments {len(PRODUCTS)}, groups {N_GROUPS}, group photos {n_imgs}, "
+print(f"live style {site['live']}, garments {len(PRODUCTS)} (a page each), groups {N_GROUPS}, group photos {n_imgs}, "
       f"garment photos {sum(len(p['worn']) for p in PRODUCTS)}, index.html {len(live)} bytes")
