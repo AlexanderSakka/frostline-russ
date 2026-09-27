@@ -94,12 +94,16 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   collegejakke, shorts, singlet and pannebånd. `--dry-run` prints the prompts, `--only a,b`
   redoes some. Then `python3 _source/make_product_images.py` and `build.py`.
 - **Product photos** (the cards and garment pages): `python3 _source/make_shop_images.py`
-  writes `img/shop/` and `_source/shop.json` (which cuts, colours and views exist). Grey, navy
-  and white are the skoleklær store's studio shots (`~/skole/assets/skole_*_{front,back}.jpg`),
-  black is made there from the navy, and shorts, singlet and collegejakke come from
-  `node _source/product_shots.mjs` (gpt-image-2, our model photo as the garment and a skole shot
-  for the look; writes the gitignored `_source/product-shots/`). A new colour or garment is a
-  line in its `SOURCES`, then `build.py`. Each photo is cut out of its white ground there.
+  writes `img/shop/` and `_source/shop.json` (which cuts, colours and views exist). Only the
+  colours Frostline sells: grey and navy fleece, white jersey, the navy college jacket, no
+  black. Grey, navy and white are the skoleklær store's studio shots
+  (`~/skole/assets/skole_*_{front,back}.jpg`); shorts, singlet and collegejakke come from
+  `node _source/product_shots.mjs` (gpt-image-2, a one-sentence prompt with our model photo as
+  the garment and a skole shot for the look; writes the gitignored `_source/product-shots/`). A
+  new colour or garment is a line in its `SOURCES`, then `build.py`. Each photo is cut out of
+  its white ground there with a known-background matte (the top of the script explains it),
+  so no white rim or white slit between sleeve and body shows on the dark cards; it takes
+  about five minutes.
 - **The Varsity names**: product names and the Custom heading are drawn from the Varsity font
   (Brøderbund, 1996, from https://www.dafont.com/varsity-2.font, no licence given) as SVG
   outlines by `_source/varsity.py`; the font file itself is never published. It lives in the
