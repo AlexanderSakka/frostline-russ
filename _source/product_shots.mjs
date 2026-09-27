@@ -46,6 +46,15 @@ const SPEC = {
     refs: [join(S, "model-photos/shorts-dame.png"), join(SKOLE, "assets/skole_bukse_dame_graa_front.jpg")],
     prompt: shot("women's light heather grey sweat shorts", "A short leg ending at mid-thigh; the white waist drawcord hangs loose."),
   },
+  /* navy: the grey shot above is the garment, a skole navy shot is the colour */
+  "shorts-unisex-navy": {
+    refs: [join(OUT, "shorts-unisex.png"), join(SKOLE, "assets/skole_bukse_unisex_navy_front.jpg")],
+    prompt: "The shorts from the first photo in navy, the same navy as the trousers in the second photo, same shot on white. No text.",
+  },
+  "shorts-dame-navy": {
+    refs: [join(OUT, "shorts-dame.png"), join(SKOLE, "assets/skole_bukse_dame_navy_front.jpg")],
+    prompt: "The shorts from the first photo in navy, the same navy as the trousers in the second photo, same shot on white. No text.",
+  },
   singlet: {
     refs: [join(S, "model-photos/singlet.png"), join(SKOLE, "assets/skole_tshirt_hvit_front.jpg")],
     prompt: shot("bright white singlet (tank top)"),

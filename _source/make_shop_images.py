@@ -76,8 +76,10 @@ SOURCES = {
     'hoodie': {'': fleece('hoodie')},
     'crewneck': {'': fleece('crewneck')},
     'bukse': {'unisex': fleece('bukse_unisex'), 'dame': fleece('bukse_dame')},
-    'shorts': {'unisex': {'gra': {'front': gen('shorts-unisex', (.70, .80))}},
-               'dame': {'gra': {'front': gen('shorts-dame', (.66, .70))}}},
+    'shorts': {'unisex': {'gra': {'front': gen('shorts-unisex', (.70, .80))},
+                          'navy': {'front': gen('shorts-unisex-navy', (.70, .80))}},
+               'dame': {'gra': {'front': gen('shorts-dame', (.66, .70))},
+                        'navy': {'front': gen('shorts-dame-navy', (.66, .70))}}},
     't-skjorte': {'': {'hvit': {'front': skole('tshirt_hvit_front'), 'back': skole('tshirt_hvit_back')}}},
     'longsleeve': {'': {'hvit': {'front': skole('longsleeve_hvit_front'), 'back': skole('longsleeve_hvit_back')}}},
     'singlet': {'': {'hvit': {'front': gen('singlet', (.70, .92))}}},
@@ -123,7 +125,18 @@ def cutout(im, band=3.5):
     lab2, _ = ndimage.label(R | B | G)
     M = R & np.isin(lab2, list(set(np.unique(lab2[G])) - {0}))
     U = B | (ndimage.binary_dilation(M) & ~G)  # part garment, part white
+    # near-white a little further in (a generated shot's hazy gap between the legs): judged
+    # against the nearest solid pixel too, which is the fabric beside it; a cord or a white
+    # garment is its own nearest solid pixel, so it stays
+    U |= (dist <= 6) & (d < 40) & ~G
     S = ~G & ~U                                 # all garment
+    # a few pixels of "garment" on their own, floating in a gap, are haze: ground
+    lab3, n3 = ndimage.label(S, structure=np.ones((3, 3)))
+    if n3 > 1:
+        size = np.bincount(lab3.ravel())
+        specks = np.isin(lab3, np.where(size < 60)[0]) & (lab3 > 0)
+        G |= specks
+        S &= ~specks
     _, (iy, ix) = ndimage.distance_transform_edt(~S, return_indices=True)
     F = rgb[iy, ix]                             # the garment colour beside each pixel
     k = (255 - F).argmax(axis=2)[..., None]

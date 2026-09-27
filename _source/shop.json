@@ -108,6 +108,10 @@
      {
       "k": "gra",
       "front": "shorts-unisex-gra-front"
+     },
+     {
+      "k": "navy",
+      "front": "shorts-unisex-navy-front"
      }
     ]
    },
@@ -117,6 +121,10 @@
      {
       "k": "gra",
       "front": "shorts-dame-gra-front"
+     },
+     {
+      "k": "navy",
+      "front": "shorts-dame-navy-front"
      }
     ]
    }
