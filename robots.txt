@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /_source/
 Disallow: /preview-
-Sitemap: https://russ.frostlinenorge.no/sitemap.xml
+Sitemap: https://frostlinenorge.no/sitemap.xml

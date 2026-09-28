@@ -11,16 +11,16 @@ Three styles share the same data, images, style.css and app.js:
   c  Indeks     a black index you open garment by garment, the groups as a name list
 
 In a and c a garment opens a lightbox: its model photo(s) first, then the groups wearing it.
-In b a garment card opens that garment's own page, <id>.html (russ.frostlinenorge.no/hoodie):
+In b a garment card opens that garment's own page, <id>.html (frostlinenorge.no/hoodie):
 its product photos in each colour, the surname drawn on the back for the garments that
 carry one, then the groups wearing it. The product photos and their colours come from
 shop.json (make_shop_images.py), the names are drawn in Varsity (varsity.py).
 index.html is the site. The styles listed in site.json "published" are also written as
-<style>.html (russ.frostlinenorge.no/a, /b) so they can be compared on the real domain;
+<style>.html (frostlinenorge.no/a, /b) so they can be compared on the real domain;
 those carry noindex and point canonical at the front page. preview-a/b/c.html are the
 same for local use only (gitignored).
 """
-import json, os, re, sys, html, hashlib, datetime
+import json, os, re, sys, html, hashlib, datetime, urllib.parse
 from PIL import Image, ImageOps
 
 S = os.path.dirname(os.path.abspath(__file__))
@@ -38,13 +38,13 @@ if '--live' in sys.argv:
     site['live'] = sys.argv[sys.argv.index('--live') + 1]
     if site['live'] not in STYLES:
         sys.exit(f'--live takes one of {STYLES}')
-    json.dump(site, open(site_path, 'w'), indent=1)
+    json.dump(site, open(site_path, 'w'), indent=1, ensure_ascii=False)
 
 # the domain this site is served on (also written to CNAME), and the skoleklær store's address;
 # with "forward" set, any path this site does not have goes on to that address (404.html),
-# so links to the store made while it lived on this domain keep working
-URL = f"https://{site.get('domain', 'russ.frostlinenorge.no')}/"
-SKOLE = site.get('skole', 'https://frostlinenorge.no/')
+# so links to the store made while it lived on this domain keep working (see the end)
+URL = f"https://{site.get('domain', 'frostlinenorge.no')}/"
+SKOLE = site.get('skole', 'https://skole.frostlinenorge.no/')
 
 posts = {p['n']: p for p in json.load(open(f'{S}/posts.json'))}
 groups = json.load(open(f'{S}/groups.json'))
@@ -697,8 +697,41 @@ open(f'{SITE}/sitemap.xml', 'w').write(
 open(f'{SITE}/robots.txt', 'w').write(f'User-agent: *\nAllow: /\nDisallow: /_source/\nDisallow: /preview-\nSitemap: {URL}sitemap.xml\n')
 open(f'{SITE}/CNAME', 'w').write(URL.split('/')[2] + '\n')
 
-# a path this site does not have: on to the school store at the same path (its old links, its
-# /<school> short links), or GitHub's own 404 page when there is nowhere to send it
+# The school store lived on this domain until 2026-09-28, so links to it are out there: the
+# /<school> short links handed to the schools, product and cart links, the order-status links in
+# its e-mails. With "forward" set they keep working:
+#  - 404.html, for a path this site does not have: one of its own pages written differently
+#    (/Hoodie, /hoodie/, /hoodie.html) goes to that page; anything else goes on to the store at
+#    the same path, query and #fragment. Without JavaScript it sends you to the store's front.
+#  - the short links in "store_links" also get a page of their own that forwards with a
+#    0-second refresh, so they answer 200 and work without JavaScript and in link previews.
+# (Pictures cannot be forwarded like that: the e-mail signature logos the store served are kept
+# as copies at the same paths, cdn/shop/t/2/assets/.)
+OWN = [''] + list(pages) + [s for s in STYLES if s in published]
+LINKS = site.get('store_links', []) if site.get('forward') else []
+FORWARD_MARK = '<!-- forwards to the school store (build.py store_links) -->'
+for f in os.listdir(SITE):
+    if f.endswith('.html') and f[:-5] not in LINKS and FORWARD_MARK in open(f'{SITE}/{f}').read():
+        os.remove(f'{SITE}/{f}')
+for slug in LINKS:
+    if slug in OWN:
+        sys.exit(f'store_links: /{slug} is a page of this site')
+    to = SKOLE + urllib.parse.quote(slug)
+    open(f'{SITE}/{slug}.html', 'w').write(f'''<!DOCTYPE html>
+{FORWARD_MARK}
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frostline</title>
+<link rel="canonical" href="{E(to)}">
+<meta http-equiv="refresh" content="0; url={E(to)}">
+</head>
+<body style="margin:0;padding:32px 16px;background:#09090b;font:600 16px/1.5 system-ui,sans-serif">
+<a href="{E(to)}" style="color:#fff">{E(to.split('//')[1])}</a>
+</body>
+</html>
+''')
 if site.get('forward'):
     to = SKOLE.rstrip('/')
     open(f'{SITE}/404.html', 'w').write(f'''<!DOCTYPE html>
@@ -708,7 +741,12 @@ if site.get('forward'):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Frostline</title>
-<script>location.replace({json.dumps(to)}+location.pathname+location.search+location.hash)</script>
+<script>(function(){{
+  var l=location,own={json.dumps(OWN)},p=l.pathname.replace(/\\.html$/i,'').replace(/\\/+$/,'').slice(1).toLowerCase();
+  if(own.indexOf(p)>=0&&l.pathname!=='/'+p)l.replace('/'+p+l.search+l.hash);
+  else l.replace({json.dumps(to)}+l.pathname+l.search+l.hash);
+}})()</script>
+<noscript><meta http-equiv="refresh" content="0; url={E(SKOLE)}"></noscript>
 </head>
 <body style="margin:0;padding:32px 16px;background:#09090b;font:600 16px/1.5 system-ui,sans-serif">
 <a href="{E(SKOLE)}" style="color:#fff">{E(SKOLE.split('/')[2])}</a>

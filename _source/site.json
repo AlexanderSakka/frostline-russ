@@ -4,7 +4,13 @@
   "a",
   "b"
  ],
- "domain": "russ.frostlinenorge.no",
- "skole": "https://frostlinenorge.no/",
- "forward": false
+ "domain": "frostlinenorge.no",
+ "skole": "https://skole.frostlinenorge.no/",
+ "forward": true,
+ "store_links": [
+  "lorenskog",
+  "lørenskog",
+  "demo"
+ ],
+ "moved_from": "russ.frostlinenorge.no"
 }

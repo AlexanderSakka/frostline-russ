@@ -1,10 +1,12 @@
-# russ.frostlinenorge.no
+# frostlinenorge.no
 
 Frostline's showcase for russegrupper: every garment a group can order first (zip hoodie,
 hoodie, crewneck, bukse, shorts, t-skjorte, longsleeve, singlet, collegejakke) as a product
 card that opens the garment's own page, then the custom pieces, then the groups themselves.
 No shop, no prices, no email and almost no text on purpose; the only way in is a DM to
-@frostlineno.
+@frostlineno. Until 2026-09-28 it lived at russ.frostlinenorge.no and the skoleklær store had
+frostlinenorge.no; that day they swapped (the store is now skole.frostlinenorge.no), see
+"Addresses" below.
 
 Hosted on GitHub Pages from `main`; `CNAME` pins the custom domain (written by the build from `site.json`). `index.html` is
 generated, never edit it by hand.
@@ -13,7 +15,7 @@ generated, never edit it by hand.
 
 - `index.html`: the page, written by `_source/build.py`.
 - `<id>.html` (`zip-hoodie.html`, `hoodie.html`, ...): each garment's own page, also written by
-  `build.py`, served as russ.frostlinenorge.no/hoodie. `shop.css` + `pp.js` are theirs (the
+  `build.py`, served as frostlinenorge.no/hoodie. `shop.css` + `pp.js` are theirs (the
   cards on the front page use `shop.css` too).
 - `style.css` + `app.js`: shared by every style. `v-a.css`, `v-b.css`, `v-c.css`: the three styles.
 - `img/shop/<id>[-<cut>]-<colour>-<front|back>-{600,1200}.webp`: the product photos, cut out of
@@ -24,6 +26,10 @@ generated, never edit it by hand.
   bukse and shorts).
 - `img/logo/<post>.webp`: each group's chest logo for style b's ticker (`make_logos.py`).
 - `img/c/<name>-{s,m,l}.webp`: the custom pieces (`custom.json`).
+- `404.html`, `lorenskog.html`, `lørenskog.html`, `demo.html`: the school store's old links,
+  sent on to skole.frostlinenorge.no (see "Addresses").
+- `cdn/shop/t/2/assets/`: the e-mail signature logos, kept at the paths the store served them
+  from, because signatures and sent e-mails load them from frostlinenorge.no.
 - `assets/`: logos, `og.jpg` (link preview), `mosaic.jpg` (style b's hero).
 - `_source/`: data and scripts (below). Gitignored there: `raw/` (Instagram originals and
   `raw/custom/`), `logo-src/` (the groups' print files, up to 37 MB each),
@@ -34,7 +40,7 @@ generated, never edit it by hand.
 
 `_source/site.json` says which one is live (`"live"`) and which are also published on the
 domain for comparison (`"published"`, written as `a.html` and `b.html`, so
-russ.frostlinenorge.no/a and /b; noindex, canonical to the front page). All three are also
+frostlinenorge.no/a and /b; noindex, canonical to the front page). All three are also
 built as `preview-a.html`, `preview-b.html`, `preview-c.html` for local use (gitignored):
 
 - **a, Lookbook**: the logo, then every garment as a tile; hovering a tile turns the model
@@ -122,6 +128,41 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
 
 Commit and push; Pages redeploys in about a minute.
 
+## Addresses
+
+`_source/site.json` holds them: `"domain"` (written to `CNAME` and used for canonical, og and
+sitemap URLs), `"skole"` (the skoleklær store, also in the JSON-LD `sameAs`), `"forward"`,
+`"store_links"` and `"moved_from"`.
+
+On 2026-09-28 this site moved from russ.frostlinenorge.no to frostlinenorge.no, and the
+Shopify store moved from frostlinenorge.no to skole.frostlinenorge.no (Shopify admin, primary
+domain). Links made before that keep working:
+
+- **The store's old links** (`"forward": true`): `404.html` sends any path this site does not
+  have to the store at the same path, query and #fragment (a product, the cart, the
+  order-status link in an order e-mail, `/<school>`), and one of this site's own pages written
+  differently (`/Hoodie`, `/hoodie/`) to that page. The school short links the store handed
+  out, `"store_links"`, also get a page each (`lorenskog.html`...) that forwards with a
+  0-second refresh, so they work without JavaScript and in link previews. A new school needs
+  nothing here: its `/<slug>` goes through `404.html`. Pictures cannot be forwarded that way,
+  so the e-mail signature logos sit in `cdn/shop/t/2/assets/` as copies of what the store
+  served.
+- **This site's old address** (`"moved_from"`): GitHub Pages gives a repository one custom
+  domain, so russ.frostlinenorge.no is held by a second repository,
+  AlexanderSakka/frostline-russ-redirect (checked out beside this one), written by
+  `python3 _source/moved.py`: a page per garment with that page's link preview that goes on to
+  the same page here (keeping `#navy`), and a `404.html` for everything else. Run it and push
+  that repository after adding or renaming a garment.
+- **www.frostlinenorge.no** is a CNAME to alexandersakka.github.io, and GitHub sends it to the
+  bare domain.
+
+DNS (Domene.no cPanel Zone Editor, frostlinenorge.no): the bare domain has GitHub's four A
+records (185.199.108-111.153) and four AAAA (2606:50c0:8000-8003::153), `www` and `russ` are
+CNAMEs to alexandersakka.github.io., `skole` a CNAME to shops.myshopify.com. Mail is separate
+and did not move: MX is mail.frostlinenorge.no (its own A record, 185.126.36.19, like webmail,
+cpanel and ftp). This network answers DNS from a cache; to see a change, ask
+ns1/ns2/ns3.dnsdomene.net through a web dig (digwebinterface.com with "Specify myself").
+
 ## Search engines
 
 The page says almost nothing on purpose, so search engines are told who Frostline is in
@@ -133,13 +174,6 @@ store as `sameAs`, plus WebSite and WebPage), the hidden section headings ("Russ
 them; `robots.txt` points to it. The front page's `<title>` and `og:title` stay the bare
 name; a garment page is "Hoodie | Frostline" with its own description, canonical, link
 preview and a BreadcrumbList.
-
-`_source/site.json` holds the addresses: `"domain"` (written to `CNAME` and used for
-canonical, og and sitemap URLs), `"skole"` (the skoleklær store) and `"forward"`. With
-`"forward": true` the build writes a `404.html` that sends any path this site does not
-have on to the skoleklær store at the same path; that is for the day this site takes over
-frostlinenorge.no and the store moves to a subdomain, so its old links and `/<school>`
-short links keep working.
 
 Bing, Yandex and the other IndexNow engines are told about a change with
 `curl "https://api.indexnow.org/indexnow?url=https://<domain>/&key=7aa21beeb74799d3de6a9380911714d5"`; the key file is
