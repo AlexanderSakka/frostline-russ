@@ -17,11 +17,18 @@ white (253-255), where JPEG noise and the generated shots' faint haze sit. On a 
 (t-skjorte, longsleeve, singlet) the brightest fabric is 246-250 itself, so there only
 253-255 counts, or the ground creeps into the shoulder. Within 3.5 px of it, a pixel is part garment and part white, and how much of each
 follows from how far it is from white against the garment colour beside it; it then takes
-that garment colour, so no white rim is left to show on the dark cards. Two more kinds of
-ground: a thin white slit between sleeve and body that is closed at both ends (a pure white
-island at most 6 px wide, near the outline, in dark fabric), and the narrow end of such a
-slit (a line lighter than both its sides, joined to the ground). The white cords and the
-jacket's cuff stripes are neither: they are wide, and they sit away from the outline.
+that garment colour, so no white rim is left to show on the dark cards. Only the first pixel
+off the ground is judged that way: a grey marl has threads lighter than its average, and
+measured against white they came out part see-through, dark flecks all along the outline on
+the cards (Alexander, 2026-09-28). The garment colour is taken 4 px in, smoothed over 5 x 5
+for the same reason. Two more kinds of ground: a thin white slit between sleeve and body
+that is closed at both ends (a pure white island at most 6 px wide, near the outline, in dark
+fabric), and the narrow end of such a slit (a line lighter than both its sides, joined to the
+ground, and either nearly white next to the fabric beside it or a short one where the ground
+is a narrow wedge). A seam's highlight is a line like that but only a little lighter: taken
+for a slit, the seam where a grey sleeve meets its cuff and the one over the hem rib turned
+into black lines. The white cords and the jacket's cuff stripes are neither: they are wide,
+and they sit away from the outline.
 
 Also writes <first front>-og.jpg per garment: the cutout on the cards' dark ground, for the
 link preview (apps show a transparent preview on white or black at random).
@@ -107,6 +114,20 @@ def _shift(a, dy, dx):
     return p[abs(dy) + dy: abs(dy) + dy + h, abs(dx) + dx: abs(dx) + dx + w]
 
 
+def _fabric(rgb, src):
+    """Per pixel, the garment colour at the nearest pixel of src, as the median of 5 x 5 so a
+    marl's light and dark threads do not carry into the edge."""
+    med = ndimage.median_filter(rgb, size=(5, 5, 1))
+    _, (iy, ix) = ndimage.distance_transform_edt(~src, return_indices=True)
+    return med[iy, ix]
+
+
+def _joined(m, to):
+    """The parts of m that touch `to`, directly or through m itself."""
+    lab, _ = ndimage.label(m | to)
+    return m & np.isin(lab, list(set(np.unique(lab[to])) - {0}))
+
+
 def cutout(im, band=3.5):
     """The garment with its white ground made transparent (see the top of this file)."""
     rgb = np.asarray(im.convert('RGB')).astype(np.float32)
@@ -133,13 +154,29 @@ def cutout(im, band=3.5):
         R |= (d < .72 * a1) & (d < .72 * a2) & (np.minimum(a1, a2) >= 45)
     dist = ndimage.distance_transform_edt(~G)
     B = (dist <= band) & ~G
-    lab2, _ = ndimage.label(R | B | G)
-    M = R & np.isin(lab2, list(set(np.unique(lab2[G])) - {0}))
-    U = B | (ndimage.binary_dilation(M) & ~G)  # part garment, part white
-    # near-white a little further in (a generated shot's hazy gap between the legs): judged
-    # against the nearest solid pixel too, which is the fabric beside it; a cord or a white
-    # garment is its own nearest solid pixel, so it stays
-    U |= (dist <= 6) & (d < 40) & ~G
+    M = _joined(R, B | G)
+    # ...when it shows the ground: nearly white next to the fabric around it, or a short line
+    # where the ground is a narrow wedge (a slit's closing end). A seam's highlight is neither.
+    lm, _ = ndimage.label(M, structure=np.ones((3, 3)))
+    wide = ndimage.distance_transform_edt(G)
+    for i, sl in enumerate(ndimage.find_objects(lm), 1):
+        sl = tuple(slice(max(s.start - 14, 0), s.stop + 14) for s in sl)
+        m = lm[sl] == i
+        ring = ndimage.binary_dilation(m, iterations=4) & ~m & ~G[sl]
+        if d[sl][m].mean() <= .35 * np.median(d[sl][ring]):
+            continue
+        near = ndimage.binary_dilation(m, iterations=12) & G[sl]
+        if m.sum() <= 60 and near.any() and wide[sl][near].max() <= 4:
+            continue
+        M[sl] &= ~m
+    Md = ndimage.binary_dilation(M) & ~G
+    # near-white a little further in (a generated shot's hazy gap between the legs), when it is
+    # near-white next to the fabric beside it and joined to the ground through near-white: on a
+    # grey marl d < 40 is also the fabric's own light threads
+    S0 = ~G & ~B & ~Md
+    fd0 = 255 - _fabric(rgb, S0 & (ndimage.distance_transform_edt(S0) > 3.5)).min(axis=2)
+    H = _joined((dist <= 6) & (d < 40) & (d < .5 * fd0) & ~G, G) & ~B & ~Md
+    U = B | Md | H                              # part garment, part white
     S = ~G & ~U                                 # all garment
     # a few pixels of "garment" on their own, floating in a gap, are haze: ground
     lab3, n3 = ndimage.label(S, structure=np.ones((3, 3)))
@@ -151,11 +188,12 @@ def cutout(im, band=3.5):
     # the garment colour beside each pixel, taken a few px inside: the renders light the
     # outermost 3-4 px of a dark garment ~15 % paler (a rim light), which reads as an outline
     deep = S & (ndimage.distance_transform_edt(S) > 3.5)
-    _, (iy, ix) = ndimage.distance_transform_edt(~(deep if deep.any() else S), return_indices=True)
-    F = rgb[iy, ix]
+    F = _fabric(rgb, deep if deep.any() else S)
     k = (255 - F).argmax(axis=2)[..., None]
     span = np.take_along_axis(255 - F, k, 2)[..., 0]
     cov = np.clip(np.take_along_axis(255 - rgb, k, 2)[..., 0] / np.maximum(span, 1), 0, 1)
+    # past the first pixel off the ground the band is all garment: a light thread is not white
+    cov = np.where(B & ~Md & ~H, np.maximum(cov, np.clip(dist - 1, 0, 1)), cov)
     # a white garment is too close to white to measure against: fade by distance instead
     a_u = np.where(span >= 25, cov, np.clip(dist / band, 0, 1))
     alpha = ndimage.gaussian_filter(np.where(G, 0, np.where(U, a_u, 1)).astype(np.float32), .5)

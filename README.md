@@ -103,8 +103,11 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   navy shot for the colour; writes the gitignored `_source/product-shots/`). A
   new colour or garment is a line in its `SOURCES`, then `build.py`. Each photo is cut out of
   its white ground there with a known-background matte (the top of the script explains it),
-  so no white rim or white slit between sleeve and body shows on the dark cards; it takes
-  about five minutes (`--only hoodie,zip-hoodie` redoes just those).
+  so no white rim or white slit between sleeve and body shows on the dark cards, and no dark
+  fleck along a grey marl's outline or black line on its cuff and hem seams (both came from
+  judging grey against white by absolute numbers; the rules now compare with the fabric
+  beside the pixel); it takes about five minutes (`--only hoodie,zip-hoodie` redoes just
+  those).
 - **Cord length**: the skole shots' drawcords are too long for Frostline's hoodies, so
   `python3 _source/shorten_cords.py` lifts the cord ends on the hoodie and zip hoodie fronts
   (and the hoodie model photo) to the length of the zip hoodie model photo, filling the fabric
