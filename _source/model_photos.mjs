@@ -50,11 +50,29 @@ const JOGGERS =
 const SAME = "Same crop, pose, light and backdrop as the first photo.";
 
 const SPEC = {
+  /* 2026-09-28: the cords came out round with plastic tips and, on the zip, too long
+     (Alexander). Edits of the 2026-09-26 photos, one change each; the cords come from a
+     crop of a real group photo (model-refs/cords-*-real.jpg). */
+  "zip-hoodie": {
+    refs: [join(S, "model-refs/zip-hoodie-2026-09-26.png"), join(S, "model-refs/cords-zip-real.jpg")],
+    prompt: "Same photo, but with flat white tape drawcords with plain cut ends like in the second photo, ending higher on the chest.",
+  },
+  /* not a group photo as the cord reference here: given one, the edit returned that photo,
+     person and print and all. The zip's new cords (2026-09-28) are the reference instead. */
   hoodie: {
+    refs: [join(S, "model-refs/hoodie-2026-09-26.png"), join(S, "model-refs/zip-hoodie-2026-09-28.png")],
+    prompt: "Same photo, but with drawcords like the ones in the second photo: flat white tape with plain cut ends.",
+  },
+  /* the skole shot's wide leg piled on the shoes: "way too baggy" (Alexander, 2026-09-28) */
+  "bukse-dame": {
+    refs: [join(SKOLE, "assets/skole_bukse_dame_life.jpg")],
+    prompt: "Same photo, but the sweatpants have a slimmer straight leg that ends at the ankle, above the shoes.",
+  },
+  "hoodie-2026-09-26": {
     refs: [MODEL_REF, join(SKOLE, "mockups-ref/ref02.png")],
     prompt: `The man from the first photo wearing the grey hoodie from the second photo. ${SAME} No logo, no text.`,
   },
-  "zip-hoodie": {
+  "zip-hoodie-2026-09-26": {
     refs: [MODEL_REF, join(SKOLE, "mockups-ref/ref07.webp")],
     prompt: `The man from the first photo wearing the grey zip hoodie from the second photo, zipped up. ${SAME} No logo, no text.`,
   },

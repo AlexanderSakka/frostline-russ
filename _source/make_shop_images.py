@@ -52,8 +52,10 @@ COLOURS = {
 }
 
 
-def skole(x):
-    return ('skole', f'{SKOLE}/assets/skole_{x}.jpg')
+def skole(x, raw=None):
+    """raw: the transparent original in ~/skole/mockups-ai/ that the shot was flattened from,
+    when it can still be found; its edges beat any cut of white out of white."""
+    return ('skole', f'{SKOLE}/assets/skole_{x}.jpg', f'{SKOLE}/mockups-ai/{raw}' if raw else None)
 
 
 def gen(name, fill):
@@ -80,8 +82,10 @@ SOURCES = {
                           'navy': {'front': gen('shorts-unisex-navy', (.70, .80))}},
                'dame': {'gra': {'front': gen('shorts-dame', (.66, .70))},
                         'navy': {'front': gen('shorts-dame-navy', (.66, .70))}}},
-    't-skjorte': {'': {'hvit': {'front': skole('tshirt_hvit_front'), 'back': skole('tshirt_hvit_back')}}},
-    'longsleeve': {'': {'hvit': {'front': skole('longsleeve_hvit_front'), 'back': skole('longsleeve_hvit_back')}}},
+    't-skjorte': {'': {'hvit': {'front': skole('tshirt_hvit_front', 'jersey-v2/tshirt-white.png'),
+                                'back': skole('tshirt_hvit_back', 'jersey-v2/tshirt-white-back.png')}}},
+    'longsleeve': {'': {'hvit': {'front': skole('longsleeve_hvit_front', 'jersey-v2/longsleeve-white.png'),
+                                 'back': skole('longsleeve_hvit_back', 'jersey-v2/longsleeve-white-back.png')}}},
     'singlet': {'': {'hvit': {'front': gen('singlet', (.70, .92))}}},
     'collegejakke': {'': {'navy': {'front': gen('collegejakke', (.84, .94))}}},
 }
@@ -137,8 +141,11 @@ def cutout(im, band=3.5):
         specks = np.isin(lab3, np.where(size < 60)[0]) & (lab3 > 0)
         G |= specks
         S &= ~specks
-    _, (iy, ix) = ndimage.distance_transform_edt(~S, return_indices=True)
-    F = rgb[iy, ix]                             # the garment colour beside each pixel
+    # the garment colour beside each pixel, taken a few px inside: the renders light the
+    # outermost 3-4 px of a dark garment ~15 % paler (a rim light), which reads as an outline
+    deep = S & (ndimage.distance_transform_edt(S) > 3.5)
+    _, (iy, ix) = ndimage.distance_transform_edt(~(deep if deep.any() else S), return_indices=True)
+    F = rgb[iy, ix]
     k = (255 - F).argmax(axis=2)[..., None]
     span = np.take_along_axis(255 - F, k, 2)[..., 0]
     cov = np.clip(np.take_along_axis(255 - rgb, k, 2)[..., 0] / np.maximum(span, 1), 0, 1)
@@ -147,7 +154,53 @@ def cutout(im, band=3.5):
     alpha = ndimage.gaussian_filter(np.where(G, 0, np.where(U, a_u, 1)).astype(np.float32), .5)
     alpha[S & (ndimage.distance_transform_edt(S) > 2)] = 1
     out = np.where(U[..., None], F, rgb)
+    # ...and on a dark garment that pale rim is toned into the fabric colour, fully at the
+    # edge and not at all 8 px in
+    fd = 255 - F.min(axis=2)
+    w = np.clip(1 - (dist - band) / (8 - band), 0, 1) * (S & (fd >= 100) & (d < fd))
+    out = out + (F - out) * w[..., None]
     return Image.fromarray(np.dstack([np.clip(out, 0, 255), np.clip(alpha * 255, 0, 255)]).astype(np.uint8), 'RGBA')
+
+
+def from_raw(im, raw):
+    """The shot with the alpha of its transparent original laid onto it. The skole store
+    scaled and moved the original when it flattened it, so the fit is found here: the scale
+    and offset that best overlay the original's outline on the shot's (to 0.5 px, 0.1 %)."""
+    rgb = np.asarray(im.convert('RGB')).astype(np.float32)
+    lab, _ = ndimage.label(rgb.min(axis=2) >= 250)
+    edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+    shot = ~np.isin(lab, list(edge))
+    ra = Image.open(raw).getchannel('A')
+
+    def box(m):
+        ys, xs = np.where(m)
+        return xs.min(), ys.min(), xs.max() + 1, ys.max() + 1
+
+    jb, rb = box(shot), box(np.asarray(ra) > 128)
+    s0 = ((jb[2] - jb[0]) / (rb[2] - rb[0]) + (jb[3] - jb[1]) / (rb[3] - rb[1])) / 2
+
+    def warp(sc, dx, dy):
+        m = (1 / sc, 0, rb[0] - (jb[0] + dx) / sc, 0, 1 / sc, rb[1] - (jb[1] + dy) / sc)
+        return np.asarray(ra.transform(im.size, Image.AFFINE, m, resample=Image.BICUBIC)).astype(np.float32) / 255
+
+    def iou(al):
+        a = al > .5
+        return (a & shot).sum() / (a | shot).sum()
+
+    best = (iou(warp(s0, 0, 0)), s0, 0, 0)
+    for k in range(-3, 4):
+        for dx in np.arange(-1.5, 1.6, .5):
+            for dy in np.arange(-1.5, 1.6, .5):
+                sc = s0 * (1 + k * .001)
+                v = iou(warp(sc, dx, dy))
+                if v > best[0]:
+                    best = (v, sc, dx, dy)
+    alpha = warp(*best[1:])
+    solid = alpha >= .98
+    _, (iy, ix) = ndimage.distance_transform_edt(~solid, return_indices=True)
+    out = np.where(solid[..., None], rgb, rgb[iy, ix])  # edge pixels take the garment's colour
+    print(f'  {os.path.basename(raw)}: fitted, overlap {best[0]:.4f}')
+    return Image.fromarray(np.dstack([np.clip(out, 0, 255), alpha * 255]).astype(np.uint8), 'RGBA')
 
 
 def preview(cut):
@@ -199,7 +252,7 @@ for gid, cuts in SOURCES.items():
                 im = load(src)
                 if im.size != (1200, 1200):
                     im = ImageOps.fit(im, (1200, 1200), Image.LANCZOS)
-                im = cutout(im)
+                im = from_raw(im, src[2]) if src[0] == 'skole' and src[2] else cutout(im)
                 for w in SIZES:
                     out = os.path.join(OUT, f'{name}-{w}.webp')
                     (im if w == 1200 else im.resize((w, w), Image.LANCZOS)).save(out, 'WEBP', quality=86, method=6)

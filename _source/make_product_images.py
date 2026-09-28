@@ -30,7 +30,7 @@ PHOTOS = {
     'crewneck': f'{SKOLE}/assets/skole_crewneck_life.jpg',
     'collegejakke': f'{GEN}/collegejakke.png',
     'bukse-unisex': f'{SKOLE}/assets/skole_bukse_unisex_life.jpg',
-    'bukse-dame': f'{SKOLE}/assets/skole_bukse_dame_life.jpg',
+    'bukse-dame': f'{GEN}/bukse-dame.png',  # the skole shot with a slimmer leg (it piled on the shoes)
     'shorts-unisex': f'{GEN}/shorts-unisex.png',
     'shorts-dame': f'{GEN}/shorts-dame.png',
     't-skjorte': f'{SKOLE}/assets/skole_tshirt_life.jpg',
