@@ -78,10 +78,11 @@
     drawSwatches();drawThumbs();show(Math.max(0,indexOf(t)));address();
   }
 
-  /* the surname on the back */
+  /* the surname on the back, and only while the back photo is what is on screen: a browser
+     keeps the photo before it up until the new one has loaded, so not before that either */
   function paint(){
     if(!nm)return;
-    var on=P.navn&&kind()==='back';
+    var on=P.navn&&kind()==='back'&&img.complete&&img.naturalWidth>0;
     nm.hidden=!on;if(!on)return;
     var name=input?input.value.trim().replace(/\s+/g,' ').toUpperCase():'';
     nm.textContent=name||'ETTERNAVN';
@@ -129,6 +130,7 @@
     if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.3)show(st.v+(dx<0?1:-1));
   },{passive:true});
   window.addEventListener('resize',function(){if(nm&&!nm.hidden)fit();});
+  img.addEventListener('load',paint);
   /* The name is measured in Bebas Neue, but a browser only fetches a font once some text
      uses it, and the name is hidden until the back is shown. Measured before it arrived, a
      long name was fitted in the much wider fallback face and came out a third too small.

@@ -69,6 +69,9 @@
 /* the surname on the back, in Bebas Neue like the print; the box is set per garment from
    build.py NAME_BOX (these numbers are the skole store's, the fallback) */
 .pp-name{position:absolute;left:32.3%;top:73.3%;width:35%;height:7.5%;display:flex;align-items:center;justify-content:center;font-family:"Bebas Neue","DM Sans",sans-serif;font-weight:400;line-height:1;color:#111;white-space:nowrap;pointer-events:none;z-index:1}
+/* display:flex above beats the hidden attribute's own display:none, which left the name on the
+   front and model photos once the back had been shown */
+.pp-name[hidden]{display:none}
 .pp-name.ph{opacity:.38}
 .pp-name.lt{color:#fff;text-shadow:0 0 2px rgba(0,0,0,.35)}
 
