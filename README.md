@@ -104,7 +104,11 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   new colour or garment is a line in its `SOURCES`, then `build.py`. Each photo is cut out of
   its white ground there with a known-background matte (the top of the script explains it),
   so no white rim or white slit between sleeve and body shows on the dark cards; it takes
-  about five minutes.
+  about five minutes (`--only hoodie,zip-hoodie` redoes just those).
+- **Cord length**: the skole shots' drawcords are too long for Frostline's hoodies, so
+  `python3 _source/shorten_cords.py` lifts the cord ends on the hoodie and zip hoodie fronts
+  (and the hoodie model photo) to the length of the zip hoodie model photo, filling the fabric
+  in from beside the cord; run it before `make_shop_images.py` when one of those shots changes.
 - **The Varsity names**: product names and the Custom heading are drawn from the Varsity font
   (Brøderbund, 1996, from https://www.dafont.com/varsity-2.font, no licence given) as SVG
   outlines by `_source/varsity.py`; the font file itself is never published. It lives in the

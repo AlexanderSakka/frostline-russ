@@ -4,6 +4,7 @@ its white studio ground (transparent webp, so it floats on the dark cards), squa
 
   python3 _source/make_shop_images.py            # writes img/shop/ and _source/shop.json
   python3 _source/make_shop_images.py --skole /path/to/skole
+  python3 _source/make_shop_images.py --only hoodie,zip-hoodie   # just those, keep the rest
 
 Where they come from:
   ~/skole/assets/skole_<x>_<front|back>.jpg   the skoleklær store's studio shots (grey, navy, white)
@@ -64,18 +65,24 @@ def gen(name, fill):
     return ('gen', f'{GEN}/{name}.png', fill)
 
 
-def fleece(g):
+def shorter(x):
+    """A skole shot with its drawcords brought up (shorten_cords.py; Alexander found the skole
+    cords too long for Frostline's hoodies)."""
+    return ('skole', f'{GEN}/cords/{x}.png', None)
+
+
+def fleece(g, front=skole):
     """Grey and navy, from the skole store."""
     return {
-        'gra': {'front': skole(f'{g}_graa_front'), 'back': skole(f'{g}_graa_back')},
-        'navy': {'front': skole(f'{g}_navy_front'), 'back': skole(f'{g}_navy_back')},
+        'gra': {'front': front(f'{g}_graa_front'), 'back': skole(f'{g}_graa_back')},
+        'navy': {'front': front(f'{g}_navy_front'), 'back': skole(f'{g}_navy_back')},
     }
 
 
 # garment id (products.json) -> cut ('' when it has one) -> colour -> view -> source
 SOURCES = {
-    'zip-hoodie': {'': fleece('ziphoodie')},
-    'hoodie': {'': fleece('hoodie')},
+    'zip-hoodie': {'': fleece('ziphoodie', shorter)},
+    'hoodie': {'': fleece('hoodie', shorter)},
     'crewneck': {'': fleece('crewneck')},
     'bukse': {'unisex': fleece('bukse_unisex'), 'dame': fleece('bukse_dame')},
     'shorts': {'unisex': {'gra': {'front': gen('shorts-unisex', (.70, .80))},
@@ -240,8 +247,13 @@ missing = sorted({v[1] for cuts in SOURCES.values() for cols in cuts.values() fo
 if missing:
     sys.exit('missing:\n  ' + '\n  '.join(missing))
 
+ONLY = args[args.index('--only') + 1].split(',') if '--only' in args else None
 manifest, total, n_img = {}, 0, 0
+if ONLY:  # the others stay as they are
+    manifest = json.load(open(os.path.join(S, 'shop.json')))['garments']
 for gid, cuts in SOURCES.items():
+    if ONLY and gid not in ONLY:
+        continue
     manifest[gid] = []
     for cut, cols in cuts.items():
         entry = {'cut': cut, 'colours': []}
