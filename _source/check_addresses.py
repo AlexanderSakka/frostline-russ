@@ -8,7 +8,7 @@ Every request resolves through Google's DNS over HTTPS (curl --doh-url), because
 this Mac is often on answers port 53 from its own cache. One line per check, then a count;
 exits 1 if any failed.
 """
-import os, re, subprocess, sys, tempfile
+import re, subprocess, sys, tempfile, urllib.parse
 
 DOH = 'https://dns.google/dns-query'
 STORE_STAGE = '--store' in sys.argv
@@ -21,8 +21,9 @@ def get(url):
                             '-D', f'{d}/h', '-o', f'{d}/b', url], capture_output=True, text=True)
         if r.returncode:
             return {'status': 0, 'err': f'curl exit {r.returncode}', 'h': {}, 'body': ''}
-        heads = open(f'{d}/h', errors='replace').read().split('\r\n\r\n')
-        last = [x for x in heads if x.strip()][-1].splitlines()
+        # the last response's headers (a 103 Early Hints from Shopify comes first)
+        heads = re.split(r'\n\s*\n', open(f'{d}/h', errors='replace').read())
+        last = [x for x in heads if x.startswith('HTTP/')][-1].splitlines()
         h = {k.lower(): v.strip() for k, v in (line.split(':', 1) for line in last[1:] if ':' in line)}
         return {'status': int(last[0].split()[1]), 'h': h, 'body': open(f'{d}/b', errors='replace').read()}
 
@@ -42,8 +43,10 @@ def check(url, what, ok, got):
 
 
 def redirect(url, to, code=301):
+    """A redirect to `to` (a relative Location counts as the absolute address it means)."""
     r = get(url)
-    loc = r['h'].get('location', '')
+    loc = urllib.parse.urljoin(url, r['h'].get('location', '')) if r['h'].get('location') else ''
+    to = urllib.parse.urljoin(url, to)
     check(url, f'{code} to {to}', r['status'] == code and loc == to, f"{r['status']} {loc or r.get('err', '')}")
 
 
@@ -82,8 +85,9 @@ if STORE_STAGE:
     # the store is primary on skole: its old domain and www send everything there, path and all
     redirect(f'{APEX}/', f'{SKOLE}/')
     redirect('https://www.frostlinenorge.no/', f'{SKOLE}/')
-    redirect(f'{APEX}/lorenskog', f'{SKOLE}/lorenskog')
-    redirect(f'{APEX}/demo', f'{SKOLE}/demo')
+    redirect(f'{APEX}/lorenskog', f'{SKOLE}/?skole=lorenskog')
+    redirect(f'{APEX}/demo', f'{SKOLE}/?skole=demo')
+    redirect(f'{APEX}/cart?x=1', f'{SKOLE}/cart?x=1')
     page(f'{OLD}/', 'GitHub', 'Frostline')
 else:
     page(f'{APEX}/', 'GitHub', 'Frostline')
