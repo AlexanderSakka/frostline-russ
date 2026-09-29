@@ -4,7 +4,7 @@ Frostline's showcase for russegrupper: every garment a group can order first (zi
 hoodie, crewneck, bukse, shorts, t-skjorte, longsleeve, singlet, collegejakke) as a product
 card that opens the garment's own page, then the custom pieces, then the groups themselves.
 No shop, no prices, no email and almost no text on purpose; the only way in is a DM to
-@frostlineno. Until 2026-09-28 it lived at russ.frostlinenorge.no and the skoleklær store had
+@frostlineno. Until 2026-09-29 it lived at russ.frostlinenorge.no and the skoleklær store had
 frostlinenorge.no; that day they swapped (the store is now skole.frostlinenorge.no), see
 "Addresses" below.
 
@@ -132,11 +132,13 @@ Commit and push; Pages redeploys in about a minute.
 
 `_source/site.json` holds them: `"domain"` (written to `CNAME` and used for canonical, og and
 sitemap URLs), `"skole"` (the skoleklær store, also in the JSON-LD `sameAs`), `"forward"`,
-`"store_links"` and `"moved_from"`.
+`"store_links"` and `"aliases"`.
 
-On 2026-09-28 this site moved from russ.frostlinenorge.no to frostlinenorge.no, and the
-Shopify store moved from frostlinenorge.no to skole.frostlinenorge.no (Shopify admin, primary
-domain). Links made before that keep working:
+On 2026-09-29 (early morning, Norwegian time) this site moved from russ.frostlinenorge.no to
+frostlinenorge.no, and the Shopify store moved from frostlinenorge.no to
+skole.frostlinenorge.no (Shopify admin, Domains: skole is the primary domain; frostlinenorge.no
+and www are still listed there, so pointing the DNS back at Shopify would undo the swap at once).
+Links made before that keep working:
 
 - **The store's old links** (`"forward": true`): `404.html` sends any path this site does not
   have to the store at the same path, query and #fragment (a product, the cart, the
@@ -147,21 +149,32 @@ domain). Links made before that keep working:
   nothing here: its `/<slug>` goes through `404.html`. Pictures cannot be forwarded that way,
   so the e-mail signature logos sit in `cdn/shop/t/2/assets/` as copies of what the store
   served.
-- **This site's old address** (`"moved_from"`): GitHub Pages gives a repository one custom
+- **This site's old address** (`"aliases"`): GitHub Pages gives a repository one custom
   domain, so russ.frostlinenorge.no is held by a second repository,
   AlexanderSakka/frostline-russ-redirect (checked out beside this one), written by
   `python3 _source/moved.py`: a page per garment with that page's link preview that goes on to
   the same page here (keeping `#navy`), and a `404.html` for everything else. Run it and push
   that repository after adding or renaming a garment.
-- **www.frostlinenorge.no** is a CNAME to alexandersakka.github.io, and GitHub sends it to the
-  bare domain.
+- **www.frostlinenorge.no** is a CNAME to alexandersakka.github.io; GitHub redirects it to the
+  bare domain itself and reserves it for this repository (a separate repository for www is
+  refused). Over plain http that works. Over https it needs this site's certificate to cover
+  www, and GitHub issued the certificate a minute before www pointed at it and keeps reusing
+  it: removing and re-adding the custom domain gets the same one back. It will include www when
+  GitHub renews it (before 2026-12-28). Forcing it sooner means switching the custom domain to
+  www for a few minutes and back, and GitHub's redirects carry no cache headers, so a visitor
+  during those minutes could be left in a redirect loop; do that only at night.
+  (AlexanderSakka/frostline-www-redirect was made for www before that refusal; Pages is off
+  there and it can be deleted.)
 
 DNS (Domene.no cPanel Zone Editor, frostlinenorge.no): the bare domain has GitHub's four A
-records (185.199.108-111.153) and four AAAA (2606:50c0:8000-8003::153), `www` and `russ` are
+records (185.199.108-111.153, TTL 300; cPanel insists that records with the same name and type
+share one TTL, and there used to be two identical Shopify A records), `www` and `russ` are
 CNAMEs to alexandersakka.github.io., `skole` a CNAME to shops.myshopify.com. Mail is separate
 and did not move: MX is mail.frostlinenorge.no (its own A record, 185.126.36.19, like webmail,
-cpanel and ftp). This network answers DNS from a cache; to see a change, ask
-ns1/ns2/ns3.dnsdomene.net through a web dig (digwebinterface.com with "Specify myself").
+cpanel and ftp). The network this Mac is often on answers DNS from a cache, even queries sent
+straight to ns1/ns2/ns3.dnsdomene.net; to see a change as it lands, ask them through a web dig
+(digwebinterface.com with "Specify myself"). `python3 _source/check_addresses.py` checks every
+old and new address (resolving through Google's DNS over HTTPS).
 
 ## Search engines
 

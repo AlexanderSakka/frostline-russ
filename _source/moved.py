@@ -1,29 +1,29 @@
-"""The site's old address, russ.frostlinenorge.no, which it left for frostlinenorge.no on
-2026-09-28 (the skoleklær store moved from there to skole.frostlinenorge.no the same day).
+"""The addresses that only send you on to this site: russ.frostlinenorge.no, which it left for
+frostlinenorge.no on 2026-09-29 (the skoleklær store moved from there to skole.frostlinenorge.no).
 
-GitHub Pages gives a repository one custom domain, so the old address is held by a second, tiny
-repository, AlexanderSakka/frostline-russ-redirect, checked out beside this one at
-../frostline-russ-redirect. It sends every address on to the same path on the new domain:
+GitHub Pages gives a repository one custom domain, so each is held by its own tiny repository,
+checked out beside this one ("aliases" in site.json; russ is AlexanderSakka/frostline-russ-redirect).
+www.frostlinenorge.no cannot be one: GitHub reserves it for the repository holding the bare
+domain and redirects it there itself. Each alias sends every address on to the same path here:
   - the front page, each garment page and the published styles get a page of their own with
     the real page's title and link preview, which goes on at once keeping the ?query and the
     #colour (hoodie#navy), and with a 0-second refresh when JavaScript is off (search engines
     read that as a permanent move);
-  - anything else (a photo, a mistyped path) goes on through 404.html, path and all.
+  - anything else (a photo, a mistyped path, a store link) goes on through 404.html, path and all.
 
   python3 _source/build.py && python3 _source/moved.py
-  cd ../frostline-russ-redirect && git add -A && git commit -m "..." && git push
+  then in ../frostline-russ-redirect: git add -A && git commit -m "..." && git push
 
-Run it again when a garment is added or renamed or a style is published. CNAME there holds the
-old domain; the redirect repository's Pages settings have it too, with HTTPS enforced.
+Run it again when a garment is added or renamed or a style is published. CNAME in each holds its
+host, and its Pages settings have it too, with HTTPS enforced.
 """
 import json, os, re, html
 
 S = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.dirname(S)
-OUT = os.path.join(os.path.dirname(SITE), 'frostline-russ-redirect')
 E = html.escape
 site = json.load(open(f'{S}/site.json'))
-OLD, NEW = site['moved_from'], f"https://{site['domain']}/"
+NEW = f"https://{site['domain']}/"
 BODY = 'margin:0;padding:32px 16px;background:#09090b;font:600 16px/1.5 system-ui,sans-serif'
 OG = ('og:type', 'og:site_name', 'og:title', 'og:description', 'og:image', 'og:image:width',
       'og:image:height', 'og:locale')
@@ -35,8 +35,8 @@ def meta(h, key):
 
 
 def forward(page, to):
-    """The page at the old address: the real page's title, description and link preview (the
-    values are copied as they stand, already escaped), then on to the new address."""
+    """The page at the other address: the real page's title, description and link preview (the
+    values are copied as they stand, already escaped), then on to the real one."""
     h = open(f'{SITE}/{page}').read()
     title = re.search(r'<title>(.*?)</title>', h).group(1)
     og = ''.join(f'<meta property="{k}" content="{meta(h, k)}">\n' for k in OG if meta(h, k))
@@ -60,18 +60,7 @@ def forward(page, to):
 '''
 
 
-os.makedirs(OUT, exist_ok=True)
-pages = {'index.html': NEW}
-for p in json.load(open(f'{S}/products.json'))['products']:
-    pages[f"{p['id']}.html"] = NEW + p['id']
-for s in site.get('published', []):
-    pages[f'{s}.html'] = NEW + s
-for f in os.listdir(OUT):
-    if f.endswith('.html') and f not in pages and f != '404.html':
-        os.remove(f'{OUT}/{f}')
-for f, to in pages.items():
-    open(f'{OUT}/{f}', 'w').write(forward(f, to))
-open(f'{OUT}/404.html', 'w').write(f'''<!DOCTYPE html>
+NOT_FOUND = f'''<!DOCTYPE html>
 <html lang="nb">
 <head>
 <meta charset="utf-8">
@@ -85,15 +74,33 @@ open(f'{OUT}/404.html', 'w').write(f'''<!DOCTYPE html>
 <a href="{E(NEW)}" style="color:#fff">{E(NEW.split('//')[1].rstrip('/'))}</a>
 </body>
 </html>
-''')
-open(f'{OUT}/CNAME', 'w').write(OLD + '\n')
-open(f'{OUT}/robots.txt', 'w').write(f'User-agent: *\nAllow: /\nSitemap: {NEW}sitemap.xml\n')
-open(f'{OUT}/.nojekyll', 'w').write('')
-open(f'{OUT}/README.md', 'w').write(f'''# {OLD}
+'''
 
-The old address of Frostline's russ site, which moved to {NEW} on 2026-09-28. This repository
-only holds the old domain (GitHub Pages gives each repository one) and sends every address on
-to the same path on the new one. It is written by `_source/moved.py` in
-AlexanderSakka/frostline-russ; do not edit it by hand.
+
+def write(host, out):
+    os.makedirs(out, exist_ok=True)
+    pages = {'index.html': NEW}
+    for p in json.load(open(f'{S}/products.json'))['products']:
+        pages[f"{p['id']}.html"] = NEW + p['id']
+    for s in site.get('published', []):
+        pages[f'{s}.html'] = NEW + s
+    for f in os.listdir(out):
+        if f.endswith('.html') and f not in pages and f != '404.html':
+            os.remove(f'{out}/{f}')
+    for f, to in pages.items():
+        open(f'{out}/{f}', 'w').write(forward(f, to))
+    open(f'{out}/404.html', 'w').write(NOT_FOUND)
+    open(f'{out}/CNAME', 'w').write(host + '\n')
+    open(f'{out}/robots.txt', 'w').write(f'User-agent: *\nAllow: /\nSitemap: {NEW}sitemap.xml\n')
+    open(f'{out}/.nojekyll', 'w').write('')
+    open(f'{out}/README.md', 'w').write(f'''# {host}
+
+An address of Frostline's russ site at {NEW}. This repository only holds {host} (GitHub
+Pages gives each repository one domain) and sends every address on to the same path there. It
+is written by `_source/moved.py` in AlexanderSakka/frostline-russ; do not edit it by hand.
 ''')
-print(f'{OLD} -> {NEW}: {len(pages)} pages + 404.html in {OUT}')
+    print(f'{host} -> {NEW}: {len(pages)} pages + 404.html in {out}')
+
+
+for host, repo in site['aliases'].items():
+    write(host, os.path.join(os.path.dirname(SITE), repo))

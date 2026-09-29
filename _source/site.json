@@ -12,5 +12,7 @@
   "lørenskog",
   "demo"
  ],
- "moved_from": "russ.frostlinenorge.no"
+ "aliases": {
+  "russ.frostlinenorge.no": "frostline-russ-redirect"
+ }
 }

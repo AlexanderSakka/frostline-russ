@@ -93,12 +93,13 @@ else:
     page(f'{APEX}/', 'GitHub', 'Frostline')
     page(f'{APEX}/hoodie', 'GitHub', 'Hoodie | Frostline')
     redirect('http://frostlinenorge.no/', f'{APEX}/')
-    redirect('https://www.frostlinenorge.no/', f'{APEX}/')
     redirect('http://www.frostlinenorge.no/', f'{APEX}/')
+    # fails until GitHub's certificate for this site also covers www (see README, Addresses)
+    redirect('https://www.frostlinenorge.no/', f'{APEX}/')
     forwards(f'{APEX}/lorenskog', f'{SKOLE}/lorenskog')
     forwards(f'{APEX}/l%C3%B8renskog', f'{SKOLE}/l%C3%B8renskog')
     forwards(f'{APEX}/demo', f'{SKOLE}/demo')
-    forwards(f'{APEX}/products/zip-hoodie-lorenskog', SKOLE, 404)
+    forwards(f'{APEX}/products/lorenskog-bukse', SKOLE, 404)
     forwards(f'{APEX}/Hoodie', '"hoodie"', 404)
     for f in ('frostline-logo.png', 'frostline-logo-email.png', 'frostline-logo-navy-email.png',
               'frostline-logo-white-outline.png', 'frostline-logo-white.png'):
