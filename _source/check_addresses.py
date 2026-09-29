@@ -94,7 +94,6 @@ else:
     page(f'{APEX}/hoodie', 'GitHub', 'Hoodie | Frostline')
     redirect('http://frostlinenorge.no/', f'{APEX}/')
     redirect('http://www.frostlinenorge.no/', f'{APEX}/')
-    # fails until GitHub's certificate for this site also covers www (see README, Addresses)
     redirect('https://www.frostlinenorge.no/', f'{APEX}/')
     forwards(f'{APEX}/lorenskog', f'{SKOLE}/lorenskog')
     forwards(f'{APEX}/l%C3%B8renskog', f'{SKOLE}/l%C3%B8renskog')

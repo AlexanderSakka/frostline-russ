@@ -157,12 +157,15 @@ Links made before that keep working:
   that repository after adding or renaming a garment.
 - **www.frostlinenorge.no** is a CNAME to alexandersakka.github.io; GitHub redirects it to the
   bare domain itself and reserves it for this repository (a separate repository for www is
-  refused). Over plain http that works. Over https it needs this site's certificate to cover
-  www, and GitHub issued the certificate a minute before www pointed at it and keeps reusing
-  it: removing and re-adding the custom domain gets the same one back. It will include www when
-  GitHub renews it (before 2026-12-28). Forcing it sooner means switching the custom domain to
-  www for a few minutes and back, and GitHub's redirects carry no cache headers, so a visitor
-  during those minutes could be left in a redirect loop; do that only at night.
+  refused). Over https that needs this site's certificate to cover www too. The first one,
+  issued 2026-09-29 a minute before www pointed here, did not, and GitHub kept reusing it
+  (removing and re-adding the custom domain got the same one back). What got a new one: switching
+  the custom domain to www and back queued a request for both names, which then sat at "new"
+  for six hours until the repository's Settings > Pages page was opened in a browser: that runs
+  GitHub's DNS check, and the certificate was issued a minute later. So if a certificate hangs at
+  "new", open that page first. HTTPS can only be enforced while a certificate is issued, so it
+  was off during the wait. Switching the domain to www makes GitHub redirect the bare domain to
+  www, and its redirects carry no cache headers, so only do that at night.
   (AlexanderSakka/frostline-www-redirect was made for www before that refusal; Pages is off
   there and it can be deleted.)
 
