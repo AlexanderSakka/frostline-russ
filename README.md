@@ -133,7 +133,10 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   (Brøderbund, 1996, from https://www.dafont.com/varsity-2.font, no licence given) as SVG
   outlines by `_source/varsity.py`; the font file itself is never published. It lives in the
   gitignored `_source/fonts/varsity_regular.ttf` on this Mac; another machine needs it
-  downloaded there before `build.py` runs. Needs `fonttools` (and `scipy` for the cutouts).
+  downloaded there before `build.py` runs. The font's own Ø is a solid block without the
+  outline, so `varsity.py` draws Ø from the font's O (a slash through the counter, the
+  outline regrown round it). Needs `fonttools` and `shapely` (the Ø), and `scipy` for the
+  cutouts.
 - **Icons**: `python3 _source/make_icons.py` makes the favicon (the wordmark's F, which
   Google shows beside the site name) and the home-screen icon.
 - **Size guide**: numbers and measuring lines are in `_source/sizes.json`, then `build.py`.
