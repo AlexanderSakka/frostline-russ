@@ -14,7 +14,9 @@
   "Collegejakke has no table: the factory promised one in July 2026 and never sent it.",
   "mark: the measuring line on the product photo (img/shop/<img>-1200.webp), points in that 1200 x 1200 picture, read off the",
   "cut-out's outline; two points are a straight line, three bend at the middle one (a sleeve over the shoulder). at: where along",
-  "the line its letter sits (default the middle of the longest stretch), to keep it off the other lines."
+  "the line its letter sits (default the middle of the longest stretch), to keep it off the other lines.",
+  "A garment with two cuts (bukse, shorts) shows both side by side in one table, so a letter must mean the same",
+  "measurement in both cuts (build.py stops if not); a measurement only one cut has goes last (women's shorts' hip, D)."
  ],
  "labels": {"bryst": "Bryst", "lengde": "Lengde", "erme": "Erme", "liv": "Livvidde", "hofte": "Hofte",
             "innerben": "Innerben", "benapning": "Benåpning"},
@@ -49,9 +51,9 @@
     {"k": "C", "m": "benapning", "values": [27.5, 28.5, 29.5, 30.5, 31.5, 32.5], "mark": [[258, 1024], [552, 1024]]}]},
    {"cut": "dame", "img": "shorts-dame-gra-front", "sizes": ["XS", "S", "M", "L", "XL"], "rows": [
     {"k": "A", "m": "liv", "values": [32, 34, 36, 38, 40], "mark": [[327, 262], [866, 262]]},
-    {"k": "B", "m": "hofte", "values": [44.5, 47, 49.5, 52, 54.5], "mark": [[255, 520], [941, 520]]},
-    {"k": "C", "m": "lengde", "values": [27.8, 29, 30.2, 31.4, 32.6], "mark": [[400, 228], [400, 938]], "at": 0.64},
-    {"k": "D", "m": "benapning", "values": [28.8, 30, 31.3, 32.5, 33.8], "mark": [[608, 952], [988, 910]]}]}],
+    {"k": "B", "m": "lengde", "values": [27.8, 29, 30.2, 31.4, 32.6], "mark": [[400, 228], [400, 938]], "at": 0.64},
+    {"k": "C", "m": "benapning", "values": [28.8, 30, 31.3, 32.5, 33.8], "mark": [[608, 952], [988, 910]]},
+    {"k": "D", "m": "hofte", "values": [44.5, 47, 49.5, 52, 54.5], "mark": [[255, 520], [941, 520]]}]}],
   "t-skjorte": [{"cut": "", "img": "t-skjorte-hvit-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
    {"k": "A", "m": "bryst", "values": [45.5, 47.5, 49.5, 53.5, 56.5, 59.5], "mark": [[331, 515], [883, 515]]},
    {"k": "B", "m": "lengde", "values": [62, 65, 69, 73, 75, 77], "mark": [[472, 88], [472, 1133]], "at": 0.68},

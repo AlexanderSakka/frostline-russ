@@ -16,6 +16,8 @@
 .sg-pk-im{display:block;width:84px;aspect-ratio:1/1;border-radius:16px;background:radial-gradient(60% 55% at 50% 50%,rgba(255,255,255,.13),rgba(255,255,255,0) 75%),#141418;box-shadow:inset 0 0 0 1px #26262d;transition:box-shadow .2s}
 .sg-pk-im img{width:100%;height:100%;object-fit:contain;padding:12%;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5));transition:transform .4s cubic-bezier(.2,.7,.2,1)}
 .sg-pk-n{font-family:var(--varsity);font-size:11px;line-height:1.15;letter-spacing:.05em;text-transform:uppercase;text-align:center}
+.sg-pk-c{display:block;margin-top:4px;font-size:9.5px;letter-spacing:.08em;color:var(--muted)}
+.sg-pk[aria-current="true"] .sg-pk-c{color:var(--soft)}
 .sg-pk[aria-current="true"]{color:#fff}
 .sg-pk[aria-current="true"] .sg-pk-im{box-shadow:0 0 0 2px var(--bg),0 0 0 4px #fff}
 @media(hover:hover){
@@ -35,16 +37,25 @@
 .sg-g[hidden]{display:none}
 
 /* ---------------------------------------------------------------- a garment's guide */
+/* a garment with two cuts (bukse, shorts) shows both at once: one picture, one table */
 .sg-grid{display:grid;gap:26px;align-items:center}
 @media(min-width:900px){.sg-grid{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:clamp(40px,5.4vw,84px)}}
 .sg-figs{min-width:0}
+/* two cuts make a long table: the picture starts level with the name and stays in view */
+@media(min-width:900px){
+  .sg.duo .sg-grid{align-items:start}
+  .sg.duo .sg-figs{position:sticky;top:calc(var(--bar) + 28px)}
+  .sg-dlg .sg.duo .sg-figs{top:0}
+}
 
 /* the photo on the card, the lines over it in the photo's own pixels */
 .sg-fig{position:relative;margin:0;aspect-ratio:1/1;border-radius:22px;overflow:hidden;background:radial-gradient(56% 52% at 50% 50%,rgba(255,255,255,.14),rgba(255,255,255,0) 72%),linear-gradient(180deg,#18181d,#101013);box-shadow:inset 0 0 0 1px #24242b}
-.sg-fig[hidden]{display:none}
 .sg-pic{position:absolute;inset:5%}
 .sg-pic img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 22px 30px rgba(0,0,0,.55))}
 .sg-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+/* bukse and shorts: both cuts in one picture (build.py pair_images), each half labelled */
+.sg-fig.duo .sg-pic::before{content:"";position:absolute;left:50%;top:4%;bottom:10%;width:1px;background:linear-gradient(transparent,rgba(255,255,255,.14),transparent)}
+.sg-cap{position:absolute;bottom:.4%;z-index:1;transform:translateX(-50%);padding:6px 12px 5px;border-radius:999px;background:rgba(9,9,11,.6);box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);font:400 12px/1 var(--varsity);letter-spacing:.14em;text-transform:uppercase;color:#fff;white-space:nowrap;pointer-events:none}
 .sg-m{transition:opacity .25s ease}
 .sg-edge,.sg-ln{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .sg-edge{stroke:rgba(9,9,11,.5);stroke-width:5px}
@@ -61,13 +72,8 @@
 .sg-side{display:flex;flex-direction:column;gap:22px;min-width:0}
 .sg-name{margin:0;line-height:0;color:#fff}
 .sg-name .vname{--nh:clamp(34px,4.4vw,54px)}
-.sg-cuts{display:flex;gap:8px}
-.sg-pill{padding:11px 20px 10px;border-radius:999px;box-shadow:inset 0 0 0 1px #34343d;font-weight:700;font-size:15px;color:var(--soft);transition:background .2s,color .2s}
-.sg-pill[aria-checked="true"]{background:#fff;color:#09090b;box-shadow:none}
-@media(hover:hover){.sg-pill:not([aria-checked="true"]):hover{color:#fff;box-shadow:inset 0 0 0 1px #4a4a55}}
 
 .sg-t{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
-.sg-t[hidden]{display:none}
 .sg-t th,.sg-t td{padding:13px 4px;text-align:center;border-bottom:1px solid var(--line)}
 .sg-t thead th{padding:0 4px 13px;vertical-align:bottom;font-size:11px;font-weight:700;line-height:1.2;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);transition:color .2s}
 .sg-key{display:grid;place-items:center;width:28px;height:28px;margin:0 auto 9px;border-radius:50%;background:#fff;color:#09090b;font:400 14px/1 var(--varsity);letter-spacing:0;transition:box-shadow .2s}
@@ -82,6 +88,11 @@
 .sg-t tbody tr.sel > :last-child{border-radius:0 12px 12px 0}
 .sg-t .on{color:#fff}
 .sg-t thead th.on .sg-key{box-shadow:0 0 0 2px var(--bg),0 0 0 4px #fff}
+.sg-t .sg-gh th{padding:22px 0 11px;text-align:left;cursor:default}
+.sg-t thead + tbody .sg-gh th{padding-top:16px}
+.sg-t .sg-gh:hover > *{background:none}
+.sg-cut{display:inline-block;padding:6px 12px 5px;border-radius:999px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);font:400 12px/1 var(--varsity);letter-spacing:.14em;text-transform:uppercase;color:#fff}
+.sg-t td.sg-na{color:#55555f}
 .sg-note{margin:-6px 0 0;font-size:13.5px;color:var(--muted)}
 .sg-go{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:11px 16px 10px 20px;border-radius:999px;box-shadow:inset 0 0 0 1px #34343d;font-weight:700;font-size:15px;text-decoration:none;color:#fff;transition:box-shadow .2s,background .2s}
 .sg-go svg{width:16px;height:16px}
@@ -115,7 +126,7 @@ body.sg-open{overflow:hidden}
   .sg-dlg-bar{padding:12px 12px 0 18px}
   .sg-dlg-body{padding:6px 16px calc(24px + env(safe-area-inset-bottom))}
   /* a smaller photo, so the table is on screen too */
-  .sg-dlg .sg-figs{width:min(100%,56vw);margin:0 auto}
+  .sg-dlg .sg:not(.duo) .sg-figs{width:min(100%,56vw);margin:0 auto}
   .sg-dlg .sg-grid{gap:18px}
 }
 

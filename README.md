@@ -19,13 +19,17 @@ generated, never edit it by hand.
   `build.py`, served as frostlinenorge.no/hoodie. `shop.css` + `pp.js` are theirs (the
   cards on the front page use `shop.css` too).
 - `storrelser.html`: the size guide, one garment at a time (frostlinenorge.no/storrelser;
-  `#bukse-dame` opens one garment and cut). The same panel opens in a sheet from the
-  Størrelser link on each garment page, and the footer links it. `sizes.css` + `sizes.js`.
+  `#bukse` opens one). Bukse and shorts show both cuts at once: the pair picture with each
+  cut labelled, one table with a Unisex and a Dame part. The same panel opens in a sheet from
+  the Størrelser link on each garment page, and the footer links it. `sizes.css` + `sizes.js`.
 - `style.css` + `app.js`: shared by every style. `v-a.css`, `v-b.css`, `v-c.css`: the three styles.
 - `img/shop/<id>[-<cut>]-<colour>-<front|back>-{600,1200}.webp`: the product photos, cut out of
   their white ground (transparent), and `<first front>-og.jpg` for each page's link preview
   (`make_shop_images.py`); `-200.webp` copies for the size guide's row of garments, made by
   `build.py` itself.
+- `img/shop/<bukse|shorts>-pair-<colour>-{600,1200}.webp`: both cuts (unisex, dame) side by
+  side at one scale, made by `build.py` (`pair_images`) from the photos above: the front-page
+  cards and the size guide show these, so the women's cut is seen without opening anything.
 - `img/<post>-<slide>-{s,m,l}.webp`: Instagram photos at 480, 900 and 1440 px.
 - `img/p/<id>-model-{600,1000}.webp`: one on-model photo per garment (two for the cuts of
   bukse and shorts).
@@ -144,7 +148,10 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   the cut-out's outline: two points draw a straight line, three bend at the middle one (a
   raglan sleeve from the neck over the shoulder to the cuff); `at` moves its letter along
   the line when it would sit on another line. A new product photo with a different crop
-  needs its lines read again. A garment missing from `sizes.json` gets no size guide and no
+  needs its lines read again. For bukse and shorts the lines are read on each cut's own
+  photo and moved onto its half of the pair picture by the build; the same letter must mean
+  the same measurement in both cuts (the build stops if not), and a measurement only one cut
+  has goes last and shows as a dash in the other. A garment missing from `sizes.json` gets no size guide and no
   Størrelser link (the collegejakke until the factory sends its measurements).
 
 Commit and push; Pages redeploys in about a minute.

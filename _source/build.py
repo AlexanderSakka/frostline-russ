@@ -430,16 +430,22 @@ def card(p):
     for cut in p['cuts']:  # a colour the first cut lacks comes from the next cut that has it
         for c in cut['colours']:
             front.setdefault(c['k'], c['front'])
+    duo = len(p['cuts']) > 1
+    if duo:  # bukse and shorts: both cuts side by side, so the dame cut shows without opening the card
+        front.update(pair_images(p))
     k0 = p['colours'][0]
     dots = ''.join(
         f'<a class="sw{" on" if k == k0 else ""}" href="{p["id"]}#{k}" style="--c:{COLOURS[k]["hex"]}" '
         f'data-src="{shop_src(front[k], 600)}" data-srcset="{shop_srcset(front[k])}" '
         f'aria-label="{E(p["name"])} i {cname(k).lower()}"></a>'
         for k in p['colours'])
-    img = shop_img(front[k0], CARD_SIZES, shop_alt(p, k0), cls='pc-im')
+    alt = (f"{p['name']} fra Frostline i {cname(k0).lower()}, unisex- og damemodell side om side" if duo
+           else shop_alt(p, k0))
+    img = shop_img(front[k0], CARD_SIZES, alt, cls='pc-im')
     num = PRODUCTS.index(p) + 1
+    cuts = (f'<span class="pc-cuts">{" · ".join(E(CUT_NAME[c["cut"]]) for c in p["cuts"])}</span>' if duo else '')
     return (f'<article class="pc" id="{p["id"]}"><a class="pc-link" href="{p["id"]}">'
-            f'<span class="pc-num" aria-hidden="true">{num:02d}</span><span class="pc-img">{img}</span>'
+            f'<span class="pc-num" aria-hidden="true">{num:02d}</span>{cuts}<span class="pc-img">{img}</span>'
             f'<h3 class="pc-name">{varsity(p["name"])}<span class="sr">{E(p["name"])}</span></h3></a>'
             f'<div class="pc-sw">{dots}</div></article>')
 
@@ -556,59 +562,129 @@ SG_PIC = '(min-width: 1240px) 600px, (min-width: 900px) 48vw, 92vw'
 SG_PIC_SHEET = '(min-width: 1100px) 480px, (min-width: 700px) 44vw, 56vw'
 
 
+def stale(f, *srcs):
+    """True when a made file is missing or older than any file it is made from."""
+    return not os.path.exists(f) or any(os.path.getmtime(f) < os.path.getmtime(s) for s in srcs)
+
+
 def shop_thumb(name, w=200):
     """A small copy of a product photo for the size guide's row of garments, made here from
     the 1200 one when it is missing or older than that."""
     src, f = f'{SITE}/img/shop/{name}-1200.webp', f'img/shop/{name}-{w}.webp'
-    if not os.path.exists(f'{SITE}/{f}') or os.path.getmtime(f'{SITE}/{f}') < os.path.getmtime(src):
+    if stale(f'{SITE}/{f}', src):
         Image.open(src).resize((w, w), Image.LANCZOS).save(f'{SITE}/{f}', quality=88, method=6)
     return f'{f}?v={version(f)}'
 
 
+# Bukse and shorts come in two cuts, unisex and dame. Wherever a garment shows before it is
+# opened (its card on the front page, the size guide's row, its size guide) both cuts stand
+# side by side at the same scale, so the difference is there to see without clicking: one
+# picture, 1200 x 1200, a 600-wide pane per cut, the garments shrunk alike until the wider
+# fits its pane, and a band left at the foot for the size guide's Unisex / Dame labels.
+PAIR_BAND = 90
+PAIR_MID = (1200 - PAIR_BAND) / 2
+
+
+def pair_scale(p):
+    """The one scale both cuts of a garment are drawn at in the pair picture."""
+    s = 1.0
+    for cut in p['cuts']:
+        for c in cut['colours']:
+            x0, y0, x1, y1 = Image.open(f"{SITE}/img/shop/{c['front']}-1200.webp").split()[-1].getbbox()
+            s = min(s, 280 / max(600 - x0, x1 - 600), (PAIR_MID - 10) / (600 - y0),
+                    (1200 - PAIR_BAND - 5 - PAIR_MID) / (y1 - 600))
+    return s
+
+
+def pair_at(i, s, x, y):
+    """Where a point of cut i's own photo lands in the pair picture."""
+    return 300 + 600 * i + (x - 600) * s, PAIR_MID + (y - 600) * s
+
+
+def pair_images(p):
+    """The pair picture per colour both cuts have, img/shop/<id>-pair-<colour>-{600,1200}.webp,
+    made when missing or older than the photos; {colour: name} for shop_img."""
+    s, out = pair_scale(p), {}
+    fronts = [{c['k']: c['front'] for c in cut['colours']} for cut in p['cuts']]
+    for k in p['colours']:
+        if not all(k in fr for fr in fronts):
+            continue
+        name = f"{p['id']}-pair-{k}"
+        srcs = [f'{SITE}/img/shop/{fr[k]}-1200.webp' for fr in fronts]
+        if stale(f'{SITE}/img/shop/{name}-1200.webp', *srcs):
+            pic = Image.new('RGBA', (1200, 1200), (0, 0, 0, 0))
+            n = round(1200 * s)
+            for i, src in enumerate(srcs):
+                im = Image.open(src).convert('RGBA').resize((n, n), Image.LANCZOS)
+                # the middle 600 of the shrunk photo, its centre on the pane's centre, cut to the canvas
+                top = round(PAIR_MID - n / 2)
+                pane = im.crop((n // 2 - 300, max(0, -top), n // 2 + 300, min(n, 1200 - top)))
+                pic.alpha_composite(pane, (600 * i, max(0, top)))
+            for w in (1200, 600):
+                (pic if w == 1200 else pic.resize((w, w), Image.LANCZOS)).save(
+                    f'{SITE}/img/shop/{name}-{w}.webp', quality=86, method=6)
+        out[k] = name
+    return out
+
+
 def size_guide(p, level=2, go=False, pic=SG_PIC):
-    """A garment's size guide: per cut its product photo with the measuring lines on it and a
-    table with the sizes down the side and the measurements across; Unisex / Dame switch
-    between the cuts (sizes.js). go: a link on to the garment's own page (on /storrelser);
-    pic: the photo's sizes attribute."""
+    """A garment's size guide: its product photo with the measuring lines on it, and a table
+    with the sizes down the side and the measurements across. A garment with two cuts shows
+    both at once: the pair picture with each cut's lines on its own half, labelled, and one
+    table, the unisex sizes and then the dame sizes under the same letters (a letter is the
+    same measurement in both cuts; a measurement only one cut has is a dash in the other).
+    go: a link on to the garment's own page (on /storrelser); pic: the photo's sizes."""
     pid, name, cuts = p['id'], p['name'], SIZE_OF[p['id']]
     labels = SIZES['labels']
-    figs, tables = [], []
-    for i, c in enumerate(cuts):
-        hide = ' hidden' if i else ''
-        cut = CUT_NAME.get(c['cut'], '')
-        which = f"{name}{' ' + cut.lower() if cut else ''}"
-        alt = f"{which} med målene {and_list([r['k'] + ' ' + labels[r['m']].lower() for r in c['rows']])}"
-        marks = ''.join(measure_mark(r) for r in c['rows'])
-        figs.append(f'<figure class="sg-fig" data-sg-cut="{c["cut"]}"{hide}><div class="sg-pic">'
-                    + shop_img(c['img'], pic, alt)
-                    + f'<svg class="sg-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false">{marks}</svg>'
-                    '</div></figure>')
-        cols = ''.join(f'<th scope="col" data-k="{r["k"]}"><span class="sg-key" aria-hidden="true">{r["k"]}</span>'
-                       f'{E(labels[r["m"]])}</th>' for r in c['rows'])
+    duo = len(cuts) > 1
+    cols = {}
+    for c in cuts:
+        for r in c['rows']:
+            if cols.setdefault(r['k'], r['m']) != r['m']:
+                sys.exit(f"sizes.json: {pid} uses {r['k']} for both {cols[r['k']]} and {r['m']}")
+    keys = sorted(cols)
+    what = and_list([k + ' ' + labels[cols[k]].lower() for k in keys])
+    if duo:
+        s = pair_scale(p)
+        marks = ''.join(measure_mark(dict(r, mark=[pair_at(i, s, x, y) for x, y in r['mark']]))
+                        for i, c in enumerate(cuts) for r in c['rows'])
+        img = shop_img(pair_images(p)['gra'], pic, f"{name} i unisex- og damemodell side om side, med målene {what}")
+        caps = ''.join(f'<span class="sg-cap" style="left:{25 + 50 * i}%">{E(CUT_NAME[c["cut"]])}</span>'
+                       for i, c in enumerate(cuts))
+    else:
+        marks = ''.join(measure_mark(r) for r in cuts[0]['rows'])
+        img, caps = shop_img(cuts[0]['img'], pic, f'{name} med målene {what}'), ''
+    fig = (f'<figure class="sg-fig{" duo" if duo else ""}"><div class="sg-pic">{img}'
+           f'<svg class="sg-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false">{marks}</svg>'
+           f'{caps}</div></figure>')
+    head = ''.join(f'<th scope="col" data-k="{k}"><span class="sg-key" aria-hidden="true">{k}</span>{E(labels[cols[k]])}</th>'
+                   for k in keys)
+    groups = []
+    for c in cuts:
+        have = {r['k']: r for r in c['rows']}
         rows = ''.join(f'<tr><th scope="row">{s}</th>'
-                       + ''.join(f'<td data-k="{r["k"]}">{cm(r["values"][j])}</td>' for r in c['rows']) + '</tr>'
+                       + ''.join(f'<td data-k="{k}">{cm(have[k]["values"][j])}</td>' if k in have
+                                 else f'<td data-k="{k}" class="sg-na"><span aria-hidden="true">–</span><span class="sr">ikke målt</span></td>'
+                                 for k in keys) + '</tr>'
                        for j, s in enumerate(c['sizes']))
-        tables.append(f'<table class="sg-t" data-sg-cut="{c["cut"]}"{hide}><caption class="sr">{E(which)}, mål i cm</caption>'
-                      f'<thead><tr><th scope="col"><span class="sr">Størrelse</span></th>{cols}</tr></thead>'
-                      f'<tbody>{rows}</tbody></table>')
-    pills = ''
-    if len(cuts) > 1:
-        pills = ('<div class="sg-cuts" role="radiogroup" aria-label="Snitt">'
-                 + ''.join(f'<button class="sg-pill" type="button" role="radio" data-cut="{c["cut"]}" '
-                           f'aria-checked="{"true" if i == 0 else "false"}">{E(CUT_NAME[c["cut"]])}</button>'
-                           for i, c in enumerate(cuts)) + '</div>')
+        top = (f'<tr class="sg-gh"><th colspan="{len(keys) + 1}" scope="rowgroup"><span class="sg-cut">'
+               f'{E(CUT_NAME[c["cut"]])}</span></th></tr>') if duo else ''
+        groups.append(f'<tbody>{top}{rows}</tbody>')
+    cap = f"{name}{', unisex og dame' if duo else ''}, mål i cm"
+    table = (f'<table class="sg-t{" duo" if duo else ""}"><caption class="sr">{E(cap)}</caption>'
+             f'<thead><tr><th scope="col"><span class="sr">Størrelse</span></th>{head}</tr></thead>{"".join(groups)}</table>')
     more = f'<a class="sg-go" href="{pid}">Se plagget{CHEV[1]}</a>' if go else ''
-    return (f'<div class="sg" data-g="{pid}"><div class="sg-grid">\n'
-            f'<div class="sg-figs">{"".join(figs)}</div>\n'
+    return (f'<div class="sg{" duo" if duo else ""}" data-g="{pid}"><div class="sg-grid">\n'
+            f'<div class="sg-figs">{fig}</div>\n'
             f'<div class="sg-side"><h{level} class="sg-name">{varsity(name)}<span class="sr">{E(name)}</span></h{level}>\n'
-            f'{pills}{"".join(tables)}\n<p class="sg-note">Mål i cm, plagget liggende flatt.</p>{more}</div>\n'
+            f'{table}\n<p class="sg-note">Mål i cm, plagget liggende flatt.</p>{more}</div>\n'
             f'</div></div>')
 
 
 def sizes_page():
     """storrelser.html: the size guide, one garment at a time, picked from a row of them;
-    storrelser#bukse opens the trousers and #bukse-dame their women's cut (sizes.js). Without
-    JavaScript the first garment shows."""
+    storrelser#bukse opens the trousers, both cuts (#bukse-dame, an older link, does too;
+    sizes.js). Without JavaScript the first garment shows."""
     url = URL + 'storrelser'
     title = 'Størrelser | Frostline'
     desc = (f"Størrelsesguide for russeklær fra Frostline: mål i cm for {and_list([p['lname'] for p in SIZED])}. "
@@ -623,10 +699,17 @@ def sizes_page():
     ]}
     top = head('b', False, title=title, desc=desc, url=url, ld=ld, css=('shop.css', 'sizes.css'),
                body='pp-page sg-page', home=True, skip='#storrelser')
+    def thumb(p):
+        return shop_thumb(pair_images(p)['gra'] if len(SIZE_OF[p['id']]) > 1 else SIZE_OF[p['id']][0]['img'])
+
+    def cut_names(p):
+        cuts = SIZE_OF[p['id']]
+        return (f'<span class="sg-pk-c">{" · ".join(E(CUT_NAME[c["cut"]]) for c in cuts)}</span>'
+                if len(cuts) > 1 else '')
     pick = ''.join(
         f'<a class="sg-pk" href="#{p["id"]}" data-g="{p["id"]}" aria-current="{"true" if i == 0 else "false"}">'
-        f'<span class="sg-pk-im"><img src="{shop_thumb(SIZE_OF[p["id"]][0]["img"])}" alt="" width="200" height="200" '
-        f'decoding="async"></span><span class="sg-pk-n">{E(p["name"])}</span></a>'
+        f'<span class="sg-pk-im"><img src="{thumb(p)}" alt="" width="200" height="200" '
+        f'decoding="async"></span><span class="sg-pk-n">{E(p["name"])}{cut_names(p)}</span></a>'
         for i, p in enumerate(SIZED))
     secs = ''.join(
         f'<section class="sg-g" id="sg-{p["id"]}" data-g="{p["id"]}" aria-label="{E(p["name"])}"{" hidden" if i else ""}>\n'
