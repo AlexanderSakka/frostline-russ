@@ -2,7 +2,8 @@
 
 Frostline's showcase for russegrupper: every garment a group can order first (zip hoodie,
 hoodie, crewneck, bukse, shorts, t-skjorte, longsleeve, singlet, collegejakke) as a product
-card that opens the garment's own page, then the custom pieces, then the groups themselves.
+card that opens the garment's own page, then the custom pieces, then the groups themselves,
+and a size guide at frostlinenorge.no/storrelser (since 2026-09-30, Alexander's ask).
 No shop, no prices, no email and almost no text on purpose; the only way in is a DM to
 @frostlineno. Until 2026-09-29 it lived at russ.frostlinenorge.no and the skoleklær store had
 frostlinenorge.no; that day they swapped (the store is now skole.frostlinenorge.no), see
@@ -17,10 +18,14 @@ generated, never edit it by hand.
 - `<id>.html` (`zip-hoodie.html`, `hoodie.html`, ...): each garment's own page, also written by
   `build.py`, served as frostlinenorge.no/hoodie. `shop.css` + `pp.js` are theirs (the
   cards on the front page use `shop.css` too).
+- `storrelser.html`: the size guide, one garment at a time (frostlinenorge.no/storrelser;
+  `#bukse-dame` opens one garment and cut). The same panel opens in a sheet from the
+  Størrelser link on each garment page, and the footer links it. `sizes.css` + `sizes.js`.
 - `style.css` + `app.js`: shared by every style. `v-a.css`, `v-b.css`, `v-c.css`: the three styles.
 - `img/shop/<id>[-<cut>]-<colour>-<front|back>-{600,1200}.webp`: the product photos, cut out of
   their white ground (transparent), and `<first front>-og.jpg` for each page's link preview
-  (`make_shop_images.py`).
+  (`make_shop_images.py`); `-200.webp` copies for the size guide's row of garments, made by
+  `build.py` itself.
 - `img/<post>-<slide>-{s,m,l}.webp`: Instagram photos at 480, 900 and 1440 px.
 - `img/p/<id>-model-{600,1000}.webp`: one on-model photo per garment (two for the cuts of
   bukse and shorts).
@@ -80,6 +85,12 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   by looking at the print. Kodiak and Siberia (autumn 2025, before the print system) have
   no file yet and are left out of the ticker.
 - `_source/custom.json`: one-off pieces made for a single group (group, what it is, photos).
+- `_source/sizes.json`: the size guide's numbers per garment and cut, and where each
+  measuring line sits on the product photo. Its `_note` says where every number comes from:
+  the factory's 2026 spec sheets for the fleece garments, the russ print guide for the
+  t-skjorte, longsleeve and singlet (which is the size a group orders, one up from the
+  Stanley/Stella and Bella+Canvas blank for the t-shirt and singlet). No collegejakke table:
+  the factory never sent one.
 
 ## Changing things
 
@@ -125,6 +136,13 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   downloaded there before `build.py` runs. Needs `fonttools` (and `scipy` for the cutouts).
 - **Icons**: `python3 _source/make_icons.py` makes the favicon (the wordmark's F, which
   Google shows beside the site name) and the home-screen icon.
+- **Size guide**: numbers and measuring lines are in `_source/sizes.json`, then `build.py`.
+  A measuring line (`mark`) is points in the product photo's 1200 x 1200 pixels, read off
+  the cut-out's outline: two points draw a straight line, three bend at the middle one (a
+  raglan sleeve from the neck over the shoulder to the cuff); `at` moves its letter along
+  the line when it would sit on another line. A new product photo with a different crop
+  needs its lines read again. A garment missing from `sizes.json` gets no size guide and no
+  Størrelser link (the collegejakke until the factory sends its measurements).
 
 Commit and push; Pages redeploys in about a minute.
 

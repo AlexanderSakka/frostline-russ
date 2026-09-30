@@ -1,0 +1,67 @@
+{
+ "_note": [
+  "The size guide: frostlinenorge.no/storrelser and the Storrelser button on each garment page (build.py size_guide).",
+  "All numbers are cm with the garment lying flat, so a width is half the way round.",
+  "Zip hoodie, hoodie, crewneck, bukse and shorts: the factory's own spec sheets for the 2026 bulk (Qianshi's ERP, issued 2026-06-24),",
+  "~/ftmerch-print-workspace/stock/suppliers/china-qianshi/size-charts/2026-china-size-charts.xlsx. The three tops are one block",
+  "(chest given there as the whole way round, halved here); body length XS 64 / S 66 as the ERP says, not the older 65 / 65.",
+  "Women's shorts are the one sheet that gives waist, hip and leg opening the whole way round; halved here, the leg opening to one decimal.",
+  "Unisex shorts length is the outside seam without the waistband; women's shorts length is the whole side, as the factory measures them.",
+  "T-skjorte, longsleeve and singlet: the russ print guide, ~/ftmerch-print-workspace/size-guide/storrelsesguide.html (KILDER.md there),",
+  "which is the size a group orders, not the blank: a t-shirt or singlet ordered in M is an S blank (SOURCE_SIZE_OFFSET in",
+  "src/lib/stock/pools.js), and the singlet starts at S because an ordered XS would need a blank that is not made. If that offset table",
+  "changes, these three tables are wrong the same day.",
+  "Collegejakke has no table: the factory promised one in July 2026 and never sent it.",
+  "mark: the measuring line on the product photo (img/shop/<img>-1200.webp), points in that 1200 x 1200 picture, read off the",
+  "cut-out's outline; two points are a straight line, three bend at the middle one (a sleeve over the shoulder). at: where along",
+  "the line its letter sits (default the middle of the longest stretch), to keep it off the other lines."
+ ],
+ "labels": {"bryst": "Bryst", "lengde": "Lengde", "erme": "Erme", "liv": "Livvidde", "hofte": "Hofte",
+            "innerben": "Innerben", "benapning": "Benåpning"},
+ "garments": {
+  "zip-hoodie": [{"cut": "", "img": "zip-hoodie-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
+   {"k": "A", "m": "bryst", "values": [43, 48, 53, 58, 63, 68], "mark": [[322, 455], [877, 455]]},
+   {"k": "B", "m": "lengde", "values": [64, 66, 68, 72, 75, 78], "mark": [[410, 212], [410, 1128]]},
+   {"k": "C", "m": "erme", "values": [71, 71, 77, 81, 83, 85], "mark": [[834, 207], [928, 288], [982, 1172]]}]}],
+  "hoodie": [{"cut": "", "img": "hoodie-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
+   {"k": "A", "m": "bryst", "values": [43, 48, 53, 58, 63, 68], "mark": [[334, 440], [865, 440]]},
+   {"k": "B", "m": "lengde", "values": [64, 66, 68, 72, 75, 78], "mark": [[410, 210], [410, 1119]]},
+   {"k": "C", "m": "erme", "values": [71, 71, 77, 81, 83, 85], "mark": [[829, 205], [925, 284], [980, 1160]]}]}],
+  "crewneck": [{"cut": "", "img": "crewneck-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
+   {"k": "A", "m": "bryst", "values": [43, 48, 53, 58, 63, 68], "mark": [[305, 365], [893, 365]]},
+   {"k": "B", "m": "lengde", "values": [64, 66, 68, 72, 75, 78], "mark": [[468, 72], [468, 1084]]},
+   {"k": "C", "m": "erme", "values": [71, 71, 77, 81, 83, 85], "mark": [[732, 72], [905, 174], [1009, 1144]]}]}],
+  "bukse": [
+   {"cut": "unisex", "img": "bukse-unisex-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
+    {"k": "A", "m": "liv", "values": [38, 40.5, 43, 45.5, 48, 50.5], "mark": [[388, 60], [808, 60]]},
+    {"k": "B", "m": "hofte", "values": [50, 52.5, 55, 57.5, 60, 62.5], "mark": [[358, 300], [844, 300]]},
+    {"k": "C", "m": "innerben", "values": [70, 72, 74, 76, 78, 80], "mark": [[632, 388], [686, 1146]]},
+    {"k": "D", "m": "benapning", "values": [17, 18, 19, 20, 21, 22], "mark": [[362, 1144], [550, 1144]]}]},
+   {"cut": "dame", "img": "bukse-dame-gra-front", "sizes": ["XS", "S", "M", "L", "XL"], "rows": [
+    {"k": "A", "m": "liv", "values": [33.5, 36, 38.5, 41, 43.5], "mark": [[414, 60], [785, 60]]},
+    {"k": "B", "m": "hofte", "values": [46.5, 49, 51.5, 54, 56.5], "mark": [[373, 300], [826, 300]]},
+    {"k": "C", "m": "innerben", "values": [75.5, 77.5, 79.5, 81.5, 83.5], "mark": [[634, 382], [668, 1144]]},
+    {"k": "D", "m": "benapning", "values": [19.5, 20.5, 21.5, 22.5, 23.5], "mark": [[366, 1144], [565, 1144]]}]}],
+  "shorts": [
+   {"cut": "unisex", "img": "shorts-unisex-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
+    {"k": "A", "m": "liv", "values": [35.5, 38, 40.5, 43, 45.5, 48], "mark": [[313, 160], [885, 160]]},
+    {"k": "B", "m": "lengde", "values": [39.5, 40.5, 41.5, 42.5, 43.5, 44.5], "mark": [[870, 210], [914, 1038]]},
+    {"k": "C", "m": "benapning", "values": [27.5, 28.5, 29.5, 30.5, 31.5, 32.5], "mark": [[258, 1024], [552, 1024]]}]},
+   {"cut": "dame", "img": "shorts-dame-gra-front", "sizes": ["XS", "S", "M", "L", "XL"], "rows": [
+    {"k": "A", "m": "liv", "values": [32, 34, 36, 38, 40], "mark": [[327, 262], [866, 262]]},
+    {"k": "B", "m": "hofte", "values": [44.5, 47, 49.5, 52, 54.5], "mark": [[255, 520], [941, 520]]},
+    {"k": "C", "m": "lengde", "values": [27.8, 29, 30.2, 31.4, 32.6], "mark": [[400, 228], [400, 938]], "at": 0.64},
+    {"k": "D", "m": "benapning", "values": [28.8, 30, 31.3, 32.5, 33.8], "mark": [[608, 952], [988, 910]]}]}],
+  "t-skjorte": [{"cut": "", "img": "t-skjorte-hvit-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
+   {"k": "A", "m": "bryst", "values": [45.5, 47.5, 49.5, 53.5, 56.5, 59.5], "mark": [[331, 515], [883, 515]]},
+   {"k": "B", "m": "lengde", "values": [62, 65, 69, 73, 75, 77], "mark": [[472, 88], [472, 1133]], "at": 0.68},
+   {"k": "C", "m": "erme", "values": [20, 21, 22.5, 24, 24.5, 25], "mark": [[940, 206], [1102, 494]]}]}],
+  "longsleeve": [{"cut": "", "img": "longsleeve-hvit-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
+   {"k": "A", "m": "bryst", "values": [47.5, 49.5, 53.5, 56.5, 59.5, 63.5], "mark": [[346, 580], [858, 580]]},
+   {"k": "B", "m": "lengde", "values": [65, 69, 73, 75, 77, 79], "mark": [[474, 76], [474, 1134]], "at": 0.7},
+   {"k": "C", "m": "erme", "values": [61.5, 63, 64.5, 65, 65.5, 66], "mark": [[948, 192], [1034, 1120]]}]}],
+  "singlet": [{"cut": "", "img": "singlet-hvit-front", "sizes": ["S", "M", "L", "XL", "XXL"], "rows": [
+   {"k": "A", "m": "bryst", "values": [41.5, 46.5, 51.5, 56.5, 61.5], "mark": [[327, 480], [869, 480]]},
+   {"k": "B", "m": "lengde", "values": [66, 68.5, 71, 73.5, 76], "mark": [[462, 58], [462, 1142]], "at": 0.66}]}]
+ }
+}

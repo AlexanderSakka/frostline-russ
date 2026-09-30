@@ -92,6 +92,7 @@ if STORE_STAGE:
 else:
     page(f'{APEX}/', 'GitHub', 'Frostline')
     page(f'{APEX}/hoodie', 'GitHub', 'Hoodie | Frostline')
+    page(f'{APEX}/storrelser', 'GitHub', 'Størrelser | Frostline')
     redirect('http://frostlinenorge.no/', f'{APEX}/')
     redirect('http://www.frostlinenorge.no/', f'{APEX}/')
     redirect('https://www.frostlinenorge.no/', f'{APEX}/')

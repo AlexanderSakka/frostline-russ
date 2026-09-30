@@ -15,12 +15,15 @@ In b a garment card opens that garment's own page, <id>.html (frostlinenorge.no/
 its product photos in each colour, the surname drawn on the back for the garments that
 carry one, then the groups wearing it. The product photos and their colours come from
 shop.json (make_shop_images.py), the names are drawn in Varsity (varsity.py).
+The size guide is storrelser.html (frostlinenorge.no/storrelser), one garment at a time, and
+each garment page opens its own table in a sheet; the numbers and where the measuring lines
+sit on the photos are sizes.json (its _note says where every number comes from).
 index.html is the site. The styles listed in site.json "published" are also written as
 <style>.html (frostlinenorge.no/a, /b) so they can be compared on the real domain;
 those carry noindex and point canonical at the front page. preview-a/b/c.html are the
 same for local use only (gitignored).
 """
-import json, os, re, sys, html, hashlib, datetime, urllib.parse
+import json, os, re, sys, html, hashlib, datetime, math, urllib.parse
 from PIL import Image, ImageOps
 
 S = os.path.dirname(os.path.abspath(__file__))
@@ -90,6 +93,12 @@ for p in PRODUCTS:
     # a colour once, in the order the cuts show them (the card's swatches)
     p['colours'] = list(dict.fromkeys(c['k'] for cut in p['cuts'] for c in cut['colours']))
 
+# the size guide: per garment its cuts, each a product photo to draw the measuring lines on and
+# a table (sizes.json); a garment missing there (the college jacket) has no size guide
+SIZES = json.load(open(f'{S}/sizes.json'))
+SIZE_OF = SIZES['garments']
+SIZED = [p for p in PRODUCTS if p['id'] in SIZE_OF]
+
 # one-off pieces made for a single group (custom.json), photos in img/c/
 CUSTOM = json.load(open(f'{S}/custom.json'))['custom']
 for c in CUSTOM:
@@ -151,6 +160,9 @@ ICON_IG = ('<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="curr
 ICON_STACK = ('<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" '
               'stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="14" height="14" rx="2"/>'
               '<path d="M3 17V5a2 2 0 0 1 2-2h12"/></svg>')
+ICON_RULER = ('<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" '
+              'stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 16.5 16.5 2.5l5 5-14 14z"/>'
+              '<path d="M6 13l1.8 1.8M9.5 9.5l2.6 2.6M13 6l1.8 1.8"/></svg>')
 CHEV = {-1: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" '
             'stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
         1: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" '
@@ -277,9 +289,11 @@ def head(style, preview, title=TITLE, desc=DESC, url=URL, og=('assets/og.jpg', 1
 '''
 
 
-def tail(data=None, scripts=()):
-    """Contact, footer, the lightbox and the scripts. data: the lightbox sets this page opens."""
+def tail(data=None, scripts=(), here=''):
+    """Contact, footer, the lightbox and the scripts. data: the lightbox sets this page opens;
+    here: the footer link that is this page."""
     js = ''.join(f'<script src="{s}?v={version(s)}"></script>\n' for s in ('app.js',) + tuple(scripts))
+    cur = ' aria-current="page"' if here == 'storrelser' else ''
     return f'''<section class="ig" id="kontakt" aria-labelledby="ig-h">
 <h2 class="sr" id="ig-h">Kontakt oss på Instagram</h2>
 <a class="handle" href="{IG}" target="_blank" rel="noopener">@frostlineno</a>
@@ -287,6 +301,7 @@ def tail(data=None, scripts=()):
 </section>
 </main>
 <footer class="foot">
+<a class="foot-a" href="storrelser"{cur}>Størrelser</a>
 <img src="assets/frostline-logo-white.png" alt="" width="992" height="142" loading="lazy">
 </footer>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Bildevisning">
@@ -486,6 +501,146 @@ def body_b():
 '''
 
 
+# ---------------------------------------------------------------- the size guide
+def cm(v):
+    """A measurement the way it is written in Norwegian: 40,5, and 43 without a decimal."""
+    return f'{v:g}'.replace('.', ',')
+
+
+def toward(p, q, d):
+    """The point d along the way from p to q."""
+    n = math.hypot(q[0] - p[0], q[1] - p[1])
+    return p[0] + (q[0] - p[0]) * d / n, p[1] + (q[1] - p[1]) * d / n
+
+
+def tip(at, frm, length=30, half=12):
+    """An arrowhead with its point at `at`, coming from `frm`."""
+    (x, y), (fx, fy) = at, frm
+    n = math.hypot(x - fx, y - fy)
+    ux, uy = (x - fx) / n, (y - fy) / n
+    bx, by = x - ux * length, y - uy * length
+    return f'M{x:.0f} {y:.0f}L{bx - uy * half:.0f} {by + ux * half:.0f}L{bx + uy * half:.0f} {by - ux * half:.0f}Z'
+
+
+def along(pts, t):
+    """The point a share t of the way along a line through pts."""
+    segs = [(a, b, math.hypot(b[0] - a[0], b[1] - a[1])) for a, b in zip(pts, pts[1:])]
+    d = t * sum(s[2] for s in segs)
+    for a, b, n in segs:
+        if d <= n:
+            return toward(a, b, d)
+        d -= n
+    return pts[-1]
+
+
+def measure_mark(r):
+    """One measurement drawn on the product photo: the line with an arrowhead at each end (the
+    line stops under them, so the points are the arrowheads' own) and its letter in a dot, a
+    share `at` along it or else in the middle of its longest stretch. All in the photo's
+    1200 x 1200 pixels; sizes.css draws it."""
+    pts, k = r['mark'], r['k']
+    if 'at' in r:
+        cx, cy = along(pts, r['at'])
+    else:
+        a, b = max(zip(pts, pts[1:]), key=lambda s: math.hypot(s[1][0] - s[0][0], s[1][1] - s[0][1]))
+        cx, cy = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
+    line = [toward(pts[0], pts[1], 22)] + pts[1:-1] + [toward(pts[-1], pts[-2], 22)]
+    d = 'M' + 'L'.join(f'{x:.0f} {y:.0f}' for x, y in line)
+    heads = tip(pts[0], pts[1]) + tip(pts[-1], pts[-2])
+    return (f'<g class="sg-m" data-k="{k}"><path class="sg-edge" d="{d}"/><path class="sg-ln" d="{d}"/>'
+            f'<path class="sg-hd" d="{heads}"/><circle class="sg-dot" cx="{cx:.0f}" cy="{cy:.0f}" r="40"/>'
+            f'<text class="sg-tx" x="{cx:.0f}" y="{cy:.0f}" dy=".36em">{k}</text></g>')
+
+
+SG_PIC = '(min-width: 1240px) 600px, (min-width: 900px) 48vw, 92vw'
+SG_PIC_SHEET = '(min-width: 1100px) 480px, (min-width: 700px) 44vw, 56vw'
+
+
+def shop_thumb(name, w=200):
+    """A small copy of a product photo for the size guide's row of garments, made here from
+    the 1200 one when it is missing or older than that."""
+    src, f = f'{SITE}/img/shop/{name}-1200.webp', f'img/shop/{name}-{w}.webp'
+    if not os.path.exists(f'{SITE}/{f}') or os.path.getmtime(f'{SITE}/{f}') < os.path.getmtime(src):
+        Image.open(src).resize((w, w), Image.LANCZOS).save(f'{SITE}/{f}', quality=88, method=6)
+    return f'{f}?v={version(f)}'
+
+
+def size_guide(p, level=2, go=False, pic=SG_PIC):
+    """A garment's size guide: per cut its product photo with the measuring lines on it and a
+    table with the sizes down the side and the measurements across; Unisex / Dame switch
+    between the cuts (sizes.js). go: a link on to the garment's own page (on /storrelser);
+    pic: the photo's sizes attribute."""
+    pid, name, cuts = p['id'], p['name'], SIZE_OF[p['id']]
+    labels = SIZES['labels']
+    figs, tables = [], []
+    for i, c in enumerate(cuts):
+        hide = ' hidden' if i else ''
+        cut = CUT_NAME.get(c['cut'], '')
+        which = f"{name}{' ' + cut.lower() if cut else ''}"
+        alt = f"{which} med målene {and_list([r['k'] + ' ' + labels[r['m']].lower() for r in c['rows']])}"
+        marks = ''.join(measure_mark(r) for r in c['rows'])
+        figs.append(f'<figure class="sg-fig" data-sg-cut="{c["cut"]}"{hide}><div class="sg-pic">'
+                    + shop_img(c['img'], pic, alt)
+                    + f'<svg class="sg-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false">{marks}</svg>'
+                    '</div></figure>')
+        cols = ''.join(f'<th scope="col" data-k="{r["k"]}"><span class="sg-key" aria-hidden="true">{r["k"]}</span>'
+                       f'{E(labels[r["m"]])}</th>' for r in c['rows'])
+        rows = ''.join(f'<tr><th scope="row">{s}</th>'
+                       + ''.join(f'<td data-k="{r["k"]}">{cm(r["values"][j])}</td>' for r in c['rows']) + '</tr>'
+                       for j, s in enumerate(c['sizes']))
+        tables.append(f'<table class="sg-t" data-sg-cut="{c["cut"]}"{hide}><caption class="sr">{E(which)}, mål i cm</caption>'
+                      f'<thead><tr><th scope="col"><span class="sr">Størrelse</span></th>{cols}</tr></thead>'
+                      f'<tbody>{rows}</tbody></table>')
+    pills = ''
+    if len(cuts) > 1:
+        pills = ('<div class="sg-cuts" role="radiogroup" aria-label="Snitt">'
+                 + ''.join(f'<button class="sg-pill" type="button" role="radio" data-cut="{c["cut"]}" '
+                           f'aria-checked="{"true" if i == 0 else "false"}">{E(CUT_NAME[c["cut"]])}</button>'
+                           for i, c in enumerate(cuts)) + '</div>')
+    more = f'<a class="sg-go" href="{pid}">Se plagget{CHEV[1]}</a>' if go else ''
+    return (f'<div class="sg" data-g="{pid}"><div class="sg-grid">\n'
+            f'<div class="sg-figs">{"".join(figs)}</div>\n'
+            f'<div class="sg-side"><h{level} class="sg-name">{varsity(name)}<span class="sr">{E(name)}</span></h{level}>\n'
+            f'{pills}{"".join(tables)}\n<p class="sg-note">Mål i cm, plagget liggende flatt.</p>{more}</div>\n'
+            f'</div></div>')
+
+
+def sizes_page():
+    """storrelser.html: the size guide, one garment at a time, picked from a row of them;
+    storrelser#bukse opens the trousers and #bukse-dame their women's cut (sizes.js). Without
+    JavaScript the first garment shows."""
+    url = URL + 'storrelser'
+    title = 'Størrelser | Frostline'
+    desc = (f"Størrelsesguide for russeklær fra Frostline: mål i cm for {and_list([p['lname'] for p in SIZED])}. "
+            'Send oss en DM på Instagram @frostlineno.')
+    ld = {'@context': 'https://schema.org', '@graph': [
+        {'@type': 'WebPage', '@id': url + '#page', 'url': url, 'name': title, 'inLanguage': 'nb-NO',
+         'description': desc, 'isPartOf': {'@id': URL + '#site'}, 'about': {'@id': URL + '#org'},
+         'breadcrumb': {'@id': url + '#crumbs'}},
+        {'@type': 'BreadcrumbList', '@id': url + '#crumbs', 'itemListElement': [
+            {'@type': 'ListItem', 'position': 1, 'name': 'Frostline', 'item': URL},
+            {'@type': 'ListItem', 'position': 2, 'name': 'Størrelser', 'item': url}]},
+    ]}
+    top = head('b', False, title=title, desc=desc, url=url, ld=ld, css=('shop.css', 'sizes.css'),
+               body='pp-page sg-page', home=True, skip='#storrelser')
+    pick = ''.join(
+        f'<a class="sg-pk" href="#{p["id"]}" data-g="{p["id"]}" aria-current="{"true" if i == 0 else "false"}">'
+        f'<span class="sg-pk-im"><img src="{shop_thumb(SIZE_OF[p["id"]][0]["img"])}" alt="" width="200" height="200" '
+        f'decoding="async"></span><span class="sg-pk-n">{E(p["name"])}</span></a>'
+        for i, p in enumerate(SIZED))
+    secs = ''.join(
+        f'<section class="sg-g" id="sg-{p["id"]}" data-g="{p["id"]}" aria-label="{E(p["name"])}"{" hidden" if i else ""}>\n'
+        f'<div class="wrap">{size_guide(p, 2, go=True)}</div>\n</section>\n'
+        for i, p in enumerate(SIZED))
+    body = f'''<main>
+<section class="sg-top" id="storrelser" aria-labelledby="sg-h">
+<h1 class="sg-title" id="sg-h">{varsity('Størrelser')}<span class="sr">Størrelser</span></h1>
+<nav class="sg-pick" aria-label="Plaggene">{pick}</nav>
+</section>
+{secs}'''
+    return top + body + tail({'s': {}}, ('sizes.js',), here='storrelser')
+
+
 # ---------------------------------------------------------------- a garment's own page
 def and_list(words):
     return words[0] if len(words) == 1 else ', '.join(words[:-1]) + ' og ' + words[-1]
@@ -528,9 +683,20 @@ def product_page(p):
     cut_pills = ''
     if len(cuts) > 1:
         cut_pills = ('<div class="pp-cuts" role="radiogroup" aria-label="Snitt">'
-                     + ''.join(f'<button class="pp-pill" type="button" role="radio" data-cut="{k}" '
+                     + ''.join(f'<button class="pp-pill" type="button" role="radio" data-cut="{k}" data-k="{c["k"]}" '
                                f'aria-checked="{"true" if k == 0 else "false"}">{E(c["label"])}</button>'
                                for k, c in enumerate(cuts)) + '</div>')
+    # the size guide opens in a sheet over the page, in the cut the page shows (sizes.js); the
+    # link goes to /storrelser where a browser cannot open the sheet
+    sized = pid in SIZE_OF
+    size_link = size_sheet = ''
+    if sized:
+        size_link = (f'<a class="pp-size" href="storrelser#{pid}" data-sg-open aria-haspopup="dialog">'
+                     f'{ICON_RULER}<span>Størrelser</span></a>\n')
+        size_sheet = (f'<dialog class="sg-dlg" id="sg-dlg" aria-labelledby="sg-dlg-h">\n'
+                      f'<div class="sg-dlg-bar"><h2 class="sg-dlg-h" id="sg-dlg-h">Størrelser</h2>'
+                      f'<button class="sg-x" type="button" aria-label="Lukk">&times;</button></div>\n'
+                      f'<div class="sg-dlg-body">{size_guide(p, 3, pic=SG_PIC_SHEET)}</div>\n</dialog>\n')
     swatches = ''.join(
         f'<button class="pp-sw" type="button" role="radio" data-col="{k}" style="--c:{c["hex"]}" '
         f'aria-checked="{"true" if k == 0 else "false"}" aria-label="{E(c["name"])}"></button>'
@@ -572,7 +738,8 @@ def product_page(p):
             {'@type': 'ListItem', 'position': 2, 'name': name, 'item': url}]},
     ]}
     top = head('b', False, title=f'{name} | Frostline', desc=desc, url=url, og=(f'img/shop/{img0}-og.jpg', 1200, 1200),
-               ld=ld, css=('shop.css',), fonts='&family=Bebas+Neue' if navn else '', body='pp-page', home=True, skip='#produkt')
+               ld=ld, css=('shop.css',) + (('sizes.css',) if sized else ()), fonts='&family=Bebas+Neue' if navn else '',
+               body='pp-page', home=True, skip='#produkt')
     body = f'''<main>
 <section class="pp" id="produkt" aria-labelledby="pp-h">
 <div class="wrap pp-top">
@@ -586,18 +753,18 @@ def product_page(p):
 <h1 class="pp-h" id="pp-h">{varsity(name)}<span class="sr">{E(name)}</span></h1>
 {cut_pills}<div class="pp-opt"><p class="pp-lab" id="pp-lab">Farge: <b id="pp-cn">{E(c0['name'])}</b></p>
 <div class="pp-sws" id="pp-sws" role="radiogroup" aria-labelledby="pp-lab">{swatches}</div></div>
-{field}<a class="btn pp-dm" href="{DM}" target="_blank" rel="noopener">{ICON_IG}<span>Send DM</span></a>
+{size_link}{field}<a class="btn pp-dm" href="{DM}" target="_blank" rel="noopener">{ICON_IG}<span>Send DM</span></a>
 </div>
 </div>
 <script id="pp-data" type="application/json">{json.dumps(data, ensure_ascii=False, separators=(',', ':'))}</script>
 </section>
-{worn_html}<section class="pp-more" aria-labelledby="m-h">
+{size_sheet}{worn_html}<section class="pp-more" aria-labelledby="m-h">
 <h2 class="sr" id="m-h">Flere plagg fra Frostline</h2>
 {cards_row(others, tabs=False)}
 </section>
 '''
     lb = {'s': {'w': {'t': name, 'k': 'p', 'imgs': worn}}}
-    return top + body + tail(lb, ('pp.js',))
+    return top + body + tail(lb, ('pp.js',) + (('sizes.js',) if sized else ()))
 
 
 # ---------------------------------------------------------------- c: Indeks
@@ -670,8 +837,9 @@ for s in STYLES:
         os.remove(f'{SITE}/{s}.html')
 live = page(site['live'])
 open(f'{SITE}/index.html', 'w').write(live)
-# every garment's own page (the cards of style b open them)
+# every garment's own page (the cards of style b open them), and the size guide
 pages = {p['id']: product_page(p) for p in PRODUCTS}
+pages['storrelser'] = sizes_page()
 for pid, h in pages.items():
     open(f'{SITE}/{pid}.html', 'w').write(h)
 
@@ -695,7 +863,11 @@ open(f'{SITE}/sitemap.xml', 'w').write(
     + ''.join(f'<url><loc>{u}</loc><lastmod>{today}</lastmod>{pictures(h)}</url>\n' for u, h in urls)
     + '</urlset>\n')
 open(f'{SITE}/robots.txt', 'w').write(f'User-agent: *\nAllow: /\nDisallow: /_source/\nDisallow: /preview-\nSitemap: {URL}sitemap.xml\n')
-open(f'{SITE}/CNAME', 'w').write(URL.split('/')[2] + '\n')
+# GitHub rewrites CNAME without a newline when the domain is set in its settings; leave the file
+# alone while it names the same host, so a build does not touch it for nothing
+host = URL.split('/')[2]
+if not os.path.exists(f'{SITE}/CNAME') or open(f'{SITE}/CNAME').read().strip() != host:
+    open(f'{SITE}/CNAME', 'w').write(host + '\n')
 
 # The school store lived on this domain until 2026-09-28, so links to it are out there: the
 # /<school> short links handed to the schools, product and cart links, the order-status links in
