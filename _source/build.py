@@ -108,6 +108,7 @@ for c in CUSTOM:
     c['imgs'] = [{'b': 'c/' + f.rsplit('.', 1)[0]} for f in c['photos']]
     for im in c['imgs']:
         im['w'], im['h'] = dims(im['b'])
+    c['alt'] = c.get('alt') or [f"Russegruppa {c['group']} i {c['what'].lower()} fra Frostline"] * len(c['photos'])
 
 # each group's own chest logo (make_logos.py), in the order of the group photos;
 # a group without one is left out
@@ -471,18 +472,17 @@ def cards_row(items, tabs=True):
 
 
 def custom_b():
-    """The one-off pieces, big, at the bottom."""
+    """The one-off pieces, their photos three across; the group's name once, on the middle photo."""
     if not CUSTOM:
         return ''
     items = ''.join(
-        f'<li><button class="cust" type="button" data-s="c{ci}" data-i="0" aria-label="{E(c["group"])}: {E(c["what"])}">'
-        + photo(c['imgs'][0]['b'], f"Russegruppa {c['group']} i {c['what'].lower()} fra Frostline",
-                '(min-width: 1240px) 1180px, 94vw' if len(CUSTOM) == 1 else '(min-width: 720px) 48vw, 94vw', large=True)
-        + credit(c['group']) + '</button></li>'
-        for ci, c in enumerate(CUSTOM))
+        f'<li><button class="cust" type="button" data-s="c{ci}" data-i="{k}">'
+        + photo(im['b'], c['alt'][k], '(min-width: 1304px) 403px, 33vw', large=True)
+        + (credit(c['group']) if k == len(c['imgs']) // 2 else '') + '</button></li>'
+        for ci, c in enumerate(CUSTOM) for k, im in enumerate(c['imgs']))
     return f'''<section class="custom" id="custom" aria-labelledby="c-h">
 <h2 class="custom-h" id="c-h">{varsity('Custom')}<span class="sr">Custom</span></h2>
-<ul class="cust-grid{' one' if len(CUSTOM) == 1 else ''}">{items}</ul>
+<ul class="cust-grid">{items}</ul>
 </section>
 '''
 

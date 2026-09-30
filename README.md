@@ -88,7 +88,10 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   is `siberia`, Doomsday is `czarface`, Glitch is `normandie`...), so every match was made
   by looking at the print. Kodiak and Siberia (autumn 2025, before the print system) have
   no file yet and are left out of the ticker.
-- `_source/custom.json`: one-off pieces made for a single group (group, what it is, photos).
+- `_source/custom.json`: one-off pieces made for a single group (group, what it is, photos,
+  an alt per photo). Style b shows the photos three across at 4:5 on every screen, the
+  group's name on the middle one from 720 px up. Swag's three come from Alexander's Drive
+  folder, cut above the FROSTLINE wordmark along their bottom; the note there has the boxes.
 - The men's cut of bukse and shorts is called **Herre** on the page (Alexander, 2026-09-30),
   though the order sheets say "Bukse unisex"; the data, the photo files and the #links keep
   the key `unisex`. The name is `CUT_NAME` in `build.py`.
@@ -103,8 +106,8 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
 
 - **Swap a photo under a garment**: edit its `worn` list in `products.json`, run `build.py`.
   In style b the first three are the ones on the slide.
-- **Add a custom piece**: put the photo in `_source/raw/custom/`, add an entry to
-  `custom.json`, run `python3 _source/make_webp.py`, then `build.py`.
+- **Add a custom piece**: put its photos in `_source/raw/custom/` cut to 4:5 (three fill a
+  row), add an entry to `custom.json`, run `python3 _source/make_webp.py`, then `build.py`.
 - **Add or replace a group logo**: put the print file (transparent PNG) in
   `_source/logo-src/<post>.png`, note its source in `logos.json`, run
   `python3 _source/make_logos.py`, then `build.py`.

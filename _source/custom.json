@@ -1,6 +1,10 @@
 {
- "_note": "One-off pieces made for a single group, shown at the bottom of style b. Photos: _source/raw/custom/<file> (gitignored), made into img/c/<name>-{s,m,l}.webp by make_webp.py.",
+ "_note": "One-off pieces made for a single group, shown in style b above the group wall, their photos three across at 4:5. Photos: _source/raw/custom/<file> (gitignored), made into img/c/<name>-{s,m,l}.webp by make_webp.py; alt says what each photo shows. Swag's are 10.png, Forsiden.png and 11.png from Alexander's Drive folder 1nckYbNOekf0O1CyBCebQUDB9x90ipDGm (3000x4000, FROSTLINE wordmark at y 3741-3896), cut to 4:5 above the wordmark: 10 (240,420,2880,3720), Forsiden (80,0,2920,3550), 11 (20,20,2980,3720).",
  "custom": [
-  {"id": "swag", "group": "Swag", "what": "Custom camo hoodie", "photos": ["swag-1.webp"]}
+  {"id": "swag", "group": "Swag", "what": "Custom camo hoodie",
+   "photos": ["swag-hette.jpg", "swag-gruppe.jpg", "swag-rygg.jpg"],
+   "alt": ["Hetta på russegruppa Swags custom camo hoodie fra Frostline",
+           "Russegruppa Swag i custom camo hoodie fra Frostline",
+           "Ryggen på russegruppa Swags custom camo hoodie fra Frostline"]}
  ]
 }
