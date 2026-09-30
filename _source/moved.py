@@ -9,7 +9,10 @@ domain and redirects it there itself. Each alias sends every address on to the s
     the real page's title and link preview, which goes on at once keeping the ?query and the
     #colour (hoodie#navy), and with a 0-second refresh when JavaScript is off (search engines
     read that as a permanent move);
-  - anything else (a photo, a mistyped path, a store link) goes on through 404.html, path and all.
+  - anything else (a photo, a mistyped path, a store link) goes on through 404.html, path and all;
+  - the icons are copied (favicon.ico, assets/favicon.png, assets/apple-touch-icon.png) and linked
+    as on the real pages, so a search result that still lists this address shows the F and not
+    a globe (Google takes the icon per host, from the host's own front page).
 
   python3 _source/build.py && python3 _source/moved.py
   then in ../frostline-russ-redirect: git add -A && git commit -m "..." && git push
@@ -17,7 +20,7 @@ domain and redirects it there itself. Each alias sends every address on to the s
 Run it again when a garment is added or renamed or a style is published. CNAME in each holds its
 host, and its Pages settings have it too, with HTTPS enforced.
 """
-import json, os, re, html
+import json, os, re, html, shutil
 
 S = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.dirname(S)
@@ -25,6 +28,7 @@ E = html.escape
 site = json.load(open(f'{S}/site.json'))
 NEW = f"https://{site['domain']}/"
 BODY = 'margin:0;padding:32px 16px;background:#09090b;font:600 16px/1.5 system-ui,sans-serif'
+ICONS = ('favicon.ico', 'assets/favicon.png', 'assets/apple-touch-icon.png')
 OG = ('og:type', 'og:site_name', 'og:title', 'og:description', 'og:image', 'og:image:width',
       'og:image:height', 'og:locale')
 
@@ -40,6 +44,7 @@ def forward(page, to):
     h = open(f'{SITE}/{page}').read()
     title = re.search(r'<title>(.*?)</title>', h).group(1)
     og = ''.join(f'<meta property="{k}" content="{meta(h, k)}">\n' for k in OG if meta(h, k))
+    icons = ''.join(t + '\n' for t in re.findall(r'<link rel="(?:icon|apple-touch-icon)"[^>]*>', h))
     return f'''<!DOCTYPE html>
 <html lang="nb">
 <head>
@@ -48,7 +53,7 @@ def forward(page, to):
 <title>{title}</title>
 <meta name="description" content="{meta(h, 'description')}">
 <link rel="canonical" href="{E(to)}">
-{og}<meta property="og:url" content="{E(to)}">
+{icons}{og}<meta property="og:url" content="{E(to)}">
 <meta name="twitter:card" content="summary_large_image">
 <script>location.replace({json.dumps(to)}+location.search+location.hash)</script>
 <noscript><meta http-equiv="refresh" content="0; url={E(to)}"></noscript>
@@ -90,6 +95,9 @@ def write(host, out):
     for f, to in pages.items():
         open(f'{out}/{f}', 'w').write(forward(f, to))
     open(f'{out}/404.html', 'w').write(NOT_FOUND)
+    os.makedirs(f'{out}/assets', exist_ok=True)
+    for f in ICONS:
+        shutil.copyfile(f'{SITE}/{f}', f'{out}/{f}')
     open(f'{out}/CNAME', 'w').write(host + '\n')
     open(f'{out}/robots.txt', 'w').write(f'User-agent: *\nAllow: /\nSitemap: {NEW}sitemap.xml\n')
     open(f'{out}/.nojekyll', 'w').write('')

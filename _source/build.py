@@ -24,7 +24,7 @@ those carry noindex and point canonical at the front page. preview-a/b/c.html ar
 same for local use only (gitignored).
 """
 import json, os, re, sys, html, hashlib, datetime, math, urllib.parse
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageDraw, ImageFilter
 
 S = os.path.dirname(os.path.abspath(__file__))
 SITE = os.path.dirname(S)
@@ -134,6 +134,11 @@ for i, c in enumerate(CUSTOM):
 TITLE = 'Frostline'
 DESC = ('Frostline lager russeklær for russegrupper: zip hoodie, hoodie, crewneck, bukse, shorts, '
         't-skjorte, longsleeve, singlet og collegejakke med gruppas eget trykk. Kontakt oss på Instagram @frostlineno.')
+# the front page's picture for a search result's thumbnail: four garments two by two, square,
+# so the thumbnail shows clothes and not the wordmark (Google passes over logos); og.jpg stays
+# the link preview, which wants 1200 x 630. home_thumb() makes it.
+THUMB = 'assets/thumb.jpg'
+THUMB_OF = ('zip-hoodie-gra-front', 'hoodie-navy-front', 'collegejakke-navy-front', 'bukse-unisex-gra-front')
 # who Frostline is, for search engines only (nothing of this shows on the page): the name
 # people search for, what the company makes, the Instagram account and the school store
 # that belong to it
@@ -155,7 +160,8 @@ LD = {
          'alternateName': 'Frostline Norge', 'inLanguage': 'nb-NO', 'publisher': {'@id': URL + '#org'}},
         {'@type': 'WebPage', '@id': URL + '#page', 'url': URL, 'name': 'Frostline', 'inLanguage': 'nb-NO',
          'isPartOf': {'@id': URL + '#site'}, 'about': {'@id': URL + '#org'},
-         'primaryImageOfPage': {'@type': 'ImageObject', 'url': URL + 'assets/og.jpg', 'width': 1200, 'height': 630}},
+         'primaryImageOfPage': {'@type': 'ImageObject', 'url': URL + THUMB, 'width': 1200, 'height': 1200},
+         'image': [URL + THUMB, URL + 'assets/og.jpg']},
     ],
 }
 
@@ -255,7 +261,8 @@ def head(style, preview, title=TITLE, desc=DESC, url=URL, og=('assets/og.jpg', 1
     """The top of a page up to the bar. The front page takes the defaults; a product page
     passes its own title, description, address, link-preview picture and JSON-LD, shop.css
     and Bebas Neue (the surname), and a bar with the logo going home."""
-    robots = '<meta name="robots" content="noindex">\n' if preview else ''
+    # a real page lets search results show its picture large (the default allows only a small one)
+    robots = f'<meta name="robots" content="{"noindex" if preview else "max-image-preview:large"}">\n'
     styles = ''.join(f'<link rel="stylesheet" href="{c}?v={version(c)}">\n' for c in ('style.css', f'v-{style}.css') + tuple(css))
     preload = '' if home else '<link rel="preload" as="image" href="assets/frostline-logo-outline.webp" fetchpriority="high">\n'
     logo = ('<a class="home" href="./" aria-label="Frostline, til forsiden">'
@@ -631,6 +638,26 @@ def pair_images(p):
     return out
 
 
+def home_thumb():
+    """THUMB, made when missing or older than the photos: the garments of THUMB_OF two by two,
+    each on the cards' dark ground under a soft light, as make_shop_images.py lights the
+    garment pages' own pictures (<front>-og.jpg)."""
+    srcs = [f'{SITE}/img/shop/{n}-1200.webp' for n in THUMB_OF]
+    if not stale(f'{SITE}/{THUMB}', *srcs):
+        return
+    g = Image.new('L', (600, 600), 0)
+    ImageDraw.Draw(g).ellipse((72, 60, 528, 540), fill=42)
+    light = Image.new('RGBA', (600, 600), (255, 255, 255, 0))
+    light.putalpha(g.filter(ImageFilter.GaussianBlur(84)))
+    pic = Image.new('RGB', (1200, 1200))
+    for i, src in enumerate(srcs):
+        tile = Image.new('RGBA', (600, 600), (18, 18, 22, 255))
+        tile.alpha_composite(light)
+        tile.alpha_composite(Image.open(src).convert('RGBA').resize((600, 600), Image.LANCZOS))
+        pic.paste(tile.convert('RGB'), (600 * (i % 2), 600 * (i // 2)))
+    pic.save(f'{SITE}/{THUMB}', quality=86, optimize=True, progressive=True)
+
+
 def size_guide(p, level=2, go=False, pic=SG_PIC):
     """A garment's size guide: its product photo with the measuring lines on it, and a table
     with the sizes down the side and the measurements across. A garment with two cuts shows
@@ -922,6 +949,7 @@ for s in STYLES:
         open(f'{SITE}/{s}.html', 'w').write(page(s, preview=True))
     elif os.path.exists(f'{SITE}/{s}.html'):
         os.remove(f'{SITE}/{s}.html')
+home_thumb()
 live = page(site['live'])
 open(f'{SITE}/index.html', 'w').write(live)
 # every garment's own page (the cards of style b open them), and the size guide

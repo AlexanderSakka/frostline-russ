@@ -39,7 +39,8 @@ generated, never edit it by hand.
   sent on to skole.frostlinenorge.no (see "Addresses").
 - `cdn/shop/t/2/assets/`: the e-mail signature logos, kept at the paths the store served them
   from, because signatures and sent e-mails load them from frostlinenorge.no.
-- `assets/`: logos, `og.jpg` (link preview), `mosaic.jpg` (style b's hero).
+- `assets/`: logos, `og.jpg` (link preview), `thumb.jpg` (the front page's picture for a search
+  result's thumbnail, four garments two by two, made by `build.py`), `mosaic.jpg` (style b's hero).
 - `_source/`: data and scripts (below). Gitignored there: `raw/` (Instagram originals and
   `raw/custom/`), `logo-src/` (the groups' print files, up to 37 MB each),
   `model-photos/` (full-size model photos), `model-refs/` (factory photos used as references;
@@ -148,7 +149,13 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   outline regrown round it). Needs `fonttools` and `shapely` (the Ø), and `scipy` for the
   cutouts.
 - **Icons**: `python3 _source/make_icons.py` makes the favicon (the wordmark's F, which
-  Google shows beside the site name) and the home-screen icon.
+  Google shows beside the site name) and the home-screen icon. Google takes the icon per host,
+  so `moved.py` copies them to the forwarding repo too: a result still listing
+  russ.frostlinenorge.no showed a globe while that host had none. Then run `moved.py` and push
+  the forwarding repo as well.
+- **Search thumbnail**: which picture Google shows beside a result is its own choice; the front
+  page names `thumb.jpg` (`THUMB_OF` in build.py) as its main picture, and every real page allows
+  large previews (`max-image-preview:large`).
 - **Size guide**: numbers and measuring lines are in `_source/sizes.json`, then `build.py`.
   A measuring line (`mark`) is points in the product photo's 1200 x 1200 pixels, read off
   the cut-out's outline: two points draw a straight line, three bend at the middle one (a
