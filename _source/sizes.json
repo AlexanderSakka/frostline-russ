@@ -6,7 +6,7 @@
   "~/ftmerch-print-workspace/stock/suppliers/china-qianshi/size-charts/2026-china-size-charts.xlsx. The three tops are one block",
   "(chest given there as the whole way round, halved here); body length XS 64 / S 66 as the ERP says, not the older 65 / 65.",
   "Women's shorts are the one sheet that gives waist, hip and leg opening the whole way round; halved here, the leg opening to one decimal.",
-  "Unisex shorts length is the outside seam without the waistband; women's shorts length is the whole side, as the factory measures them.",
+  "Unisex shorts (shown as Herre, build.py CUT_NAME) length is the outside seam without the waistband; women's shorts length is the whole side, as the factory measures them.",
   "T-skjorte, longsleeve and singlet: the russ print guide, ~/ftmerch-print-workspace/size-guide/storrelsesguide.html (KILDER.md there),",
   "which is the size a group orders, not the blank: a t-shirt or singlet ordered in M is an S blank (SOURCE_SIZE_OFFSET in",
   "src/lib/stock/pools.js), and the singlet starts at S because an ordered XS would need a blank that is not made. If that offset table",

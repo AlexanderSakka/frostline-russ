@@ -20,14 +20,14 @@ generated, never edit it by hand.
   cards on the front page use `shop.css` too).
 - `storrelser.html`: the size guide, one garment at a time (frostlinenorge.no/storrelser;
   `#bukse` opens one). Bukse and shorts show both cuts at once: the pair picture with each
-  cut labelled, one table with a Unisex and a Dame part. The same panel opens in a sheet from
+  cut labelled, one table with a Herre and a Dame part. The same panel opens in a sheet from
   the Størrelser link on each garment page, and the footer links it. `sizes.css` + `sizes.js`.
 - `style.css` + `app.js`: shared by every style. `v-a.css`, `v-b.css`, `v-c.css`: the three styles.
 - `img/shop/<id>[-<cut>]-<colour>-<front|back>-{600,1200}.webp`: the product photos, cut out of
   their white ground (transparent), and `<first front>-og.jpg` for each page's link preview
   (`make_shop_images.py`); `-200.webp` copies for the size guide's row of garments, made by
   `build.py` itself.
-- `img/shop/<bukse|shorts>-pair-<colour>-{600,1200}.webp`: both cuts (unisex, dame) side by
+- `img/shop/<bukse|shorts>-pair-<colour>-{600,1200}.webp`: both cuts (herre, dame) side by
   side at one scale, made by `build.py` (`pair_images`) from the photos above: the front-page
   cards and the size guide show these, so the women's cut is seen without opening anything.
 - `img/<post>-<slide>-{s,m,l}.webp`: Instagram photos at 480, 900 and 1440 px.
@@ -89,6 +89,9 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
   by looking at the print. Kodiak and Siberia (autumn 2025, before the print system) have
   no file yet and are left out of the ticker.
 - `_source/custom.json`: one-off pieces made for a single group (group, what it is, photos).
+- The men's cut of bukse and shorts is called **Herre** on the page (Alexander, 2026-09-30),
+  though the order sheets say "Bukse unisex"; the data, the photo files and the #links keep
+  the key `unisex`. The name is `CUT_NAME` in `build.py`.
 - `_source/sizes.json`: the size guide's numbers per garment and cut, and where each
   measuring line sits on the product photo. Its `_note` says where every number comes from:
   the factory's 2026 spec sheets for the fleece garments, the russ print guide for the

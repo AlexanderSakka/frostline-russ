@@ -79,7 +79,10 @@ N_GROUPS = len(GROUPS)
 # colours, per colour a front and maybe a back (make_shop_images.py)
 SHOP = json.load(open(f'{S}/shop.json'))
 COLOURS = SHOP['colours']
-CUT_NAME = {'unisex': 'Unisex', 'dame': 'Dame'}
+# what a cut is called on the page: the men's cut is "Herre" (Alexander, 2026-09-30; the order
+# sheets say "Bukse unisex"), while the data, the photo files and the #links keep the key "unisex"
+CUT_NAME = {'unisex': 'Herre', 'dame': 'Dame'}
+BOTH_CUTS = f"{CUT_NAME['unisex'].lower()}- og damemodell"
 # Where the surname goes on a back photo, in % of the square frame: left, top, width, height.
 # The type is as tall as the box and shrinks only when a long name reaches its width, so the
 # box is as wide as the back allows with a hand's width of clear fabric to each side seam
@@ -119,7 +122,8 @@ for gi, g in enumerate(groups):
 # c<i> a custom piece
 DATA = {'s': {}}
 for i, p in enumerate(PRODUCTS):
-    model = [{'s': f'img/p/{pid}-model-1000.webp', 'w': 1000, 'h': 1000, 'c': cut} for pid, cut in p['photos']]  # stamped below
+    model = [{'s': f'img/p/{pid}-model-1000.webp', 'w': 1000, 'h': 1000, 'c': CUT_NAME.get(cut.lower(), cut) if cut else cut}
+             for pid, cut in p['photos']]  # stamped below
     DATA['s'][f'p{i}'] = {'t': p['name'], 'k': 'p', 'imgs': model + p['worn_imgs']}
 for i, g in enumerate(GROUPS):
     DATA['s'][f'g{i}'] = {'t': g['name'], 'k': 'g', 'imgs': g['imgs']}
@@ -190,7 +194,7 @@ def model_src(pid, w):
 
 
 def model_alt(p, cut):
-    return f"{p['name']} fra Frostline på modell" + (f", {cut.lower()}" if cut else '')
+    return f"{p['name']} fra Frostline på modell" + (f", {CUT_NAME.get(cut.lower(), cut).lower()}" if cut else '')
 
 
 def model_img(p, k, sizes, cls=''):
@@ -439,7 +443,7 @@ def card(p):
         f'data-src="{shop_src(front[k], 600)}" data-srcset="{shop_srcset(front[k])}" '
         f'aria-label="{E(p["name"])} i {cname(k).lower()}"></a>'
         for k in p['colours'])
-    alt = (f"{p['name']} fra Frostline i {cname(k0).lower()}, unisex- og damemodell side om side" if duo
+    alt = (f"{p['name']} fra Frostline i {cname(k0).lower()}, {BOTH_CUTS} side om side" if duo
            else shop_alt(p, k0))
     img = shop_img(front[k0], CARD_SIZES, alt, cls='pc-im')
     num = PRODUCTS.index(p) + 1
@@ -580,7 +584,7 @@ def shop_thumb(name, w=200):
 # opened (its card on the front page, the size guide's row, its size guide) both cuts stand
 # side by side at the same scale, so the difference is there to see without clicking: one
 # picture, 1200 x 1200, a 600-wide pane per cut, the garments shrunk alike until the wider
-# fits its pane, and a band left at the foot for the size guide's Unisex / Dame labels.
+# fits its pane, and a band left at the foot for the size guide's Herre / Dame labels.
 PAIR_BAND = 90
 PAIR_MID = (1200 - PAIR_BAND) / 2
 
@@ -631,7 +635,7 @@ def size_guide(p, level=2, go=False, pic=SG_PIC):
     """A garment's size guide: its product photo with the measuring lines on it, and a table
     with the sizes down the side and the measurements across. A garment with two cuts shows
     both at once: the pair picture with each cut's lines on its own half, labelled, and one
-    table, the unisex sizes and then the dame sizes under the same letters (a letter is the
+    table, the herre sizes and then the dame sizes under the same letters (a letter is the
     same measurement in both cuts; a measurement only one cut has is a dash in the other).
     go: a link on to the garment's own page (on /storrelser); pic: the photo's sizes."""
     pid, name, cuts = p['id'], p['name'], SIZE_OF[p['id']]
@@ -648,7 +652,7 @@ def size_guide(p, level=2, go=False, pic=SG_PIC):
         s = pair_scale(p)
         marks = ''.join(measure_mark(dict(r, mark=[pair_at(i, s, x, y) for x, y in r['mark']]))
                         for i, c in enumerate(cuts) for r in c['rows'])
-        img = shop_img(pair_images(p)['gra'], pic, f"{name} i unisex- og damemodell side om side, med målene {what}")
+        img = shop_img(pair_images(p)['gra'], pic, f"{name} i {BOTH_CUTS} side om side, med målene {what}")
         caps = ''.join(f'<span class="sg-cap" style="left:{25 + 50 * i}%">{E(CUT_NAME[c["cut"]])}</span>'
                        for i, c in enumerate(cuts))
     else:
@@ -670,7 +674,7 @@ def size_guide(p, level=2, go=False, pic=SG_PIC):
         top = (f'<tr class="sg-gh"><th colspan="{len(keys) + 1}" scope="rowgroup"><span class="sg-cut">'
                f'{E(CUT_NAME[c["cut"]])}</span></th></tr>') if duo else ''
         groups.append(f'<tbody>{top}{rows}</tbody>')
-    cap = f"{name}{', unisex og dame' if duo else ''}, mål i cm"
+    cap = f"{name}{', ' + ' og '.join(CUT_NAME[c['cut']].lower() for c in cuts) if duo else ''}, mål i cm"
     table = (f'<table class="sg-t{" duo" if duo else ""}"><caption class="sr">{E(cap)}</caption>'
              f'<thead><tr><th scope="col"><span class="sr">Størrelse</span></th>{head}</tr></thead>{"".join(groups)}</table>')
     more = f'<a class="sg-go" href="{pid}">Se plagget{CHEV[1]}</a>' if go else ''
