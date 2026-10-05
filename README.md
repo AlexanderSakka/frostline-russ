@@ -55,11 +55,13 @@ built as `preview-a.html`, `preview-b.html`, `preview-c.html` for local use (git
 
 - **a, Lookbook**: the logo, then every garment as a tile; hovering a tile turns the model
   photo into a group wearing it. Then the name ticker and the groups in black and white.
-- **b, Kampanje** (live): a wall of the groups behind the logo with the groups' own chest
-  logos running underneath, each in its own dark tile (each opens that group's photos); the
-  garments as dark product cards you swipe or pick by name (the garment floating on a soft
-  light, the name in Varsity, a dot per colour: pointing at a dot shows that colour, clicking
-  opens the page in it); the custom pieces; the groups edge to edge.
+- **b, Kampanje** (live): a wall of the groups behind the logo, exactly one screen tall,
+  with the groups' own chest logos running along its bottom edge, each in a dark square tile,
+  every tile the same size (each opens that group's photos; `--sq` in `v-b.css` sets the
+  size, `logo_box` in `build.py` the logo's size in it); the garments as dark product cards
+  you swipe or pick by name (the garment floating on a soft light, the name in Varsity, a dot
+  per colour: pointing at a dot shows that colour, clicking opens the page in it); the custom
+  pieces; the groups edge to edge.
 - **c, Indeks**: black and closed, the garments as an index you open one by one, the groups
   as a name list whose photo follows the pointer.
 
@@ -115,6 +117,10 @@ python3 _source/serve.py            # then open http://127.0.0.1:8765/preview-b.
 - **Add a group**: put the post's images in `_source/raw/` as `<post>-<slide>.jpg`, add a
   `posts.json` entry and a `groups.json` row, run `python3 _source/make_webp.py`, then
   `build.py`.
+- **Take a group off the site**: delete its row in `groups.json`, its post in `posts.json`,
+  its entry in `logos.json` and its code in `codes.txt` (Pages serves `_source/` too), `git rm`
+  its `img/<post>-*.webp` and `img/logo/<post>.webp`, then `build.py`. Its originals in `raw/`
+  and `logo-src/` can stay: `make_webp.py` and `make_logos.py` skip a post without a card.
 - **Model photos**: crewneck, bukse, t-skjorte and longsleeve are the skoleklær store's shots
   (`~/skole/assets/skole_*_life.jpg`). The rest are made by `node _source/model_photos.mjs`
   (OpenAI gpt-image-2, key from `~/skole/scripts/.env`, the same model reference as the

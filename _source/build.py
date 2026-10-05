@@ -5,9 +5,9 @@
 
 Three styles share the same data, images, style.css and app.js:
   a  Lookbook   the logo, then every garment as a tile that turns into a group wearing it
-  b  Kampanje   a wall of group photos behind the logo with the groups' chest logos running
-                underneath, the garments as product cards you swipe or pick by name, the
-                custom pieces, then the groups
+  b  Kampanje   a wall of group photos behind the logo, one screen tall, the groups' chest logos
+                running along its bottom edge in square tiles, the garments as product cards
+                you swipe or pick by name, the custom pieces, then the groups
   c  Indeks     a black index you open garment by garment, the groups as a name list
 
 In a and c a garment opens a lightbox: its model photo(s) first, then the groups wearing it.
@@ -118,6 +118,19 @@ for gi, g in enumerate(groups):
     if os.path.exists(f'{SITE}/{f}'):
         w, h = Image.open(f'{SITE}/{f}').size
         LOGOS.append({'gi': gi, 'name': g['name'], 'f': f, 'w': w, 'h': h})
+
+# Style b shows each logo in a square tile, every tile the same size. A logo's size in its tile,
+# as shares of the tile's side: about the same area for every logo, so a wide wordmark and a
+# round crest weigh alike, and never wider than LOGO_W (a margin to each side) or taller than
+# LOGO_H. Most logos are two to three times as wide as tall and come out LOGO_W wide.
+LOGO_AREA, LOGO_W, LOGO_H = .28, .84, .6
+
+
+def logo_box(w, h):
+    a = w / h
+    bw, bh = (LOGO_AREA * a) ** .5, (LOGO_AREA / a) ** .5
+    k = min(1, LOGO_W / bw, LOGO_H / bh)
+    return bw * k, bh * k
 
 # lightbox sets: p<i> is a garment (model photos, then the groups in it), g<i> a group,
 # c<i> a custom piece
@@ -385,17 +398,18 @@ def mosaic():
 
 
 def logo_ticker():
-    """The groups' chest logos running under the hero, twice over so the loop has no seam.
+    """The groups' chest logos running along the hero's bottom edge, each in a square tile
+    (logo_box sizes the logo in it, v-b.css the tile), twice over so the loop has no seam.
     Each opens that group's photos. Like the photo wall behind the logo they carry data-src,
     not src: app.js starts them once the Frostline logo is in, so a slow phone gets the logo
-    first instead of sharing the line with 27 other pictures."""
+    first instead of sharing the line with every other picture on the screen."""
     def items(copy):
         extra = ' tabindex="-1"' if copy else ''
         return ''.join(
             f'<li><button class="lg" type="button" data-s="g{l["gi"]}" data-i="0" aria-label="{E(l["name"])}"{extra}>'
             f'<img data-src="{l["f"]}?v={version(l["f"])}" alt="" width="{l["w"]}" height="{l["h"]}" '
-            f'style="--f:{l["h"] / 128:.3f}" decoding="async"></button></li>'
-            for l in LOGOS)
+            f'style="--w:{bw:.3f};--h:{bh:.3f}" decoding="async"></button></li>'
+            for l in LOGOS for bw, bh in [logo_box(l['w'], l['h'])])
     return (f'<div class="logos" role="region" aria-label="Russegrupper i Frostline">'
             f'<div class="logos-track"><ul>{items(False)}</ul><ul aria-hidden="true">{items(True)}</ul></div></div>')
 
@@ -495,9 +509,9 @@ def custom_b():
 
 
 def body_b():
-    """The logo over a wall of the groups, their chest logos running underneath; the
-    garments as product cards you swipe or pick by name, each opening its own page; the
-    custom pieces; the groups edge to edge."""
+    """The logo over a wall of the groups, one screen tall, their chest logos running along
+    its bottom edge; the garments as product cards you swipe or pick by name, each opening its
+    own page; the custom pieces; the groups edge to edge."""
     mw, mh = mosaic()
     return f'''<main>
 <section class="hero hero-b" id="top">

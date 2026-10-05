@@ -10,9 +10,10 @@ same order as the group photos.
 Where each original came from is in _source/logos.json: the zip hoodie's front chest print
 from that group's order in the print system (s3://ftmerch-eu-north-1), except Czarface
 (its November 2025 order predates the print system) and Glitch (no zip in their order,
-so the hoodie back wordmark). A group without a file is left out of the ticker.
+so the hoodie back wordmark). A group without a file is left out of the ticker, and a file
+whose post has no row in groups.json (a group taken off the site) gets no logo.
 """
-import glob, os
+import glob, json, os
 from PIL import Image
 
 S = os.path.dirname(os.path.abspath(__file__))
@@ -27,8 +28,11 @@ def factor(aspect):
     return max(.62, min(1.5, (3.5 / aspect) ** .5))
 
 
+CARDS = {g['n'] for g in json.load(open(os.path.join(S, 'groups.json')))}
 for f in sorted(glob.glob(os.path.join(S, 'logo-src', '*.png'))):
     n = os.path.basename(f)[:-4]
+    if n not in CARDS:
+        continue
     im = Image.open(f).convert('RGBA')
     box = im.getchannel('A').point(lambda a: 255 if a > 10 else 0).getbbox()
     im = im.crop(box)
