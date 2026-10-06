@@ -3,8 +3,9 @@
   "The size guide: frostlinenorge.no/storrelser and the Storrelser button on each garment page (build.py size_guide).",
   "All numbers are cm with the garment lying flat, so a width is half the way round.",
   "Zip hoodie, hoodie, crewneck, bukse and shorts: measured by hand on stock garments, unwashed, along the lines drawn here (2026-10-06),",
-  "single pieces evened out where one size jumped against its neighbours. The three tops are one block at the factory, so they share one set,",
-  "taken from the crewneck (the hoodie's own chest read 7-9 cm under in every size, which a lab test of the same hoodie contradicts).",
+  "single pieces evened out where one size jumped against its neighbours. The three tops are one block at the factory, so they start",
+  "from one common set and each leans at most 0.5 cm toward its own measure (crewneck and hoodie length/sleeve by hand; hoodie chest and",
+  "the zip from QIMA's lab measures of size M), so no two differ by more than 1 cm. The hand-measured hoodie chest went rib to rib.",
   "Where a measurement came out within about 1 cm of the factory spec (Qianshi ERP 2026-06-24, 2026-china-size-charts.xlsx in",
   "~/ftmerch-print-workspace/stock/suppliers/china-qianshi/size-charts) the spec stayed: men's waist, inseam and leg opening, shorts waist,",
   "women's shorts leg opening. Women's pants gained XXL (measured; the factory sheet stops at XL). The ERP calls its numbers after wash;",
@@ -29,17 +30,17 @@
             "innerben": "Innerben", "benapning": "Benåpning"},
  "garments": {
   "zip-hoodie": [{"cut": "", "img": "zip-hoodie-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
-   {"k": "A", "m": "bryst", "values": [42, 47, 52, 56, 61, 66], "mark": [[322, 455], [877, 455]]},
+   {"k": "A", "m": "bryst", "values": [42.5, 47.5, 52.5, 56.5, 61.5, 66.5], "mark": [[322, 455], [877, 455]]},
    {"k": "B", "m": "lengde", "values": [62, 64, 65, 67, 71, 74], "mark": [[410, 212], [410, 1128]]},
-   {"k": "C", "m": "erme", "values": [67, 68.5, 72, 76, 78, 80], "mark": [[834, 207], [928, 288], [982, 1172]]}]}],
+   {"k": "C", "m": "erme", "values": [66.5, 68, 71.5, 75.5, 77.5, 79.5], "mark": [[834, 207], [928, 288], [982, 1172]]}]}],
   "hoodie": [{"cut": "", "img": "hoodie-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
-   {"k": "A", "m": "bryst", "values": [42, 47, 52, 56, 61, 66], "mark": [[334, 440], [865, 440]]},
-   {"k": "B", "m": "lengde", "values": [62, 64, 65, 67, 71, 74], "mark": [[410, 210], [410, 1119]]},
-   {"k": "C", "m": "erme", "values": [67, 68.5, 72, 76, 78, 80], "mark": [[829, 205], [925, 284], [980, 1160]]}]}],
+   {"k": "A", "m": "bryst", "values": [42.5, 47.5, 52.5, 56.5, 61.5, 66.5], "mark": [[334, 440], [865, 440]]},
+   {"k": "B", "m": "lengde", "values": [61.5, 63.5, 64.5, 66.5, 70.5, 74.5], "mark": [[410, 210], [410, 1119]]},
+   {"k": "C", "m": "erme", "values": [67.5, 69, 72, 76, 77.5, 80.5], "mark": [[829, 205], [925, 284], [980, 1160]]}]}],
   "crewneck": [{"cut": "", "img": "crewneck-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
-   {"k": "A", "m": "bryst", "values": [42, 47, 52, 56, 61, 66], "mark": [[305, 365], [893, 365]]},
-   {"k": "B", "m": "lengde", "values": [62, 64, 65, 67, 71, 74], "mark": [[468, 72], [468, 1084]]},
-   {"k": "C", "m": "erme", "values": [67, 68.5, 72, 76, 78, 80], "mark": [[732, 72], [905, 174], [1009, 1144]]}]}],
+   {"k": "A", "m": "bryst", "values": [42, 47, 51.5, 55.5, 60.5, 66.5], "mark": [[305, 365], [893, 365]]},
+   {"k": "B", "m": "lengde", "values": [62.5, 64, 65, 67, 71.5, 73.5], "mark": [[468, 72], [468, 1084]]},
+   {"k": "C", "m": "erme", "values": [66.5, 68, 72, 76, 78.5, 79.5], "mark": [[732, 72], [905, 174], [1009, 1144]]}]}],
   "bukse": [
    {"cut": "unisex", "img": "bukse-unisex-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
     {"k": "A", "m": "liv", "values": [38, 40.5, 43, 45.5, 48, 50.5], "mark": [[388, 60], [808, 60]]},
