@@ -119,11 +119,14 @@ for gi, g in enumerate(groups):
         w, h = Image.open(f'{SITE}/{f}').size
         LOGOS.append({'gi': gi, 'name': g['name'], 'f': f, 'w': w, 'h': h})
 
-# Style b shows each logo in a square tile, every tile the same size. A logo's size in its tile,
-# as shares of the tile's side: about the same area for every logo, so a wide wordmark and a
-# round crest weigh alike, and never wider than LOGO_W (a margin to each side) or taller than
-# LOGO_H. Most logos are two to three times as wide as tall and come out LOGO_W wide.
-LOGO_AREA, LOGO_W, LOGO_H = .28, .84, .6
+# Style b shows each logo in a tile, every tile the same size: --sq wide and TILE_H of that tall
+# (v-b.css). Square tiles left a wide wordmark in a box twice its height (Alexander, 2026-10-07:
+# "way too tall"). A logo's size in its tile, as shares of the tile's width: about the same
+# area for every logo, so a wide wordmark and a round crest weigh alike, and never wider than
+# LOGO_W (a margin to each side) or taller than LOGO_H (one to the top and bottom). Most logos
+# are two to three times as wide as tall and come out about three quarters of the tile wide.
+TILE_H = .6   # keep in step with --sqh in v-b.css
+LOGO_AREA, LOGO_W, LOGO_H = .18, .84, .42
 
 
 def logo_box(w, h):
@@ -398,7 +401,7 @@ def mosaic():
 
 
 def logo_ticker():
-    """The groups' chest logos running along the hero's bottom edge, each in a square tile
+    """The groups' chest logos running along the hero's bottom edge, each in a tile
     (logo_box sizes the logo in it, v-b.css the tile), twice over so the loop has no seam.
     Each opens that group's photos. Like the photo wall behind the logo they carry data-src,
     not src: app.js starts them once the Frostline logo is in, so a slow phone gets the logo

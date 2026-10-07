@@ -1,17 +1,18 @@
 /* b: Kampanje. A wall of the groups behind the logo, one screen tall, with their own chest
-   logos running along its bottom edge, each in a square tile; the garments as product cards
+   logos running along its bottom edge, each in a low tile; the garments as product cards
    you swipe or pick by name (shop.css), each opening its own page; the custom pieces; the
    groups edge to edge. */
 /* --sq: the side of a logo tile, 104px on a phone, about 113 on a tablet, 150 on a laptop and
-   168 on a big screen, never more than a sixth of a short screen's height; --gap: the space
-   between two tiles */
-.hero-b{--sq:clamp(104px,min(48px + 8.5vw,17vh),168px);--gap:clamp(6px,4px + .5vw,12px);position:relative;display:grid;place-items:center;min-height:100vh;min-height:100svh;padding:0 0 var(--sq);overflow:hidden;text-align:center}
+   168 on a big screen, never more than a sixth of a short screen's height; --sqh: its height,
+   0.6 of that (square tiles were "way too tall" for wide wordmarks; build.py TILE_H);
+   --gap: the space between two tiles */
+.hero-b{--sq:clamp(104px,min(48px + 8.5vw,17vh),168px);--sqh:calc(var(--sq) * .6);--gap:clamp(6px,4px + .5vw,12px);position:relative;display:grid;place-items:center;min-height:100vh;min-height:100svh;padding:0 0 var(--sqh);overflow:hidden;text-align:center}
 .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.04);transition:opacity .6s ease}
 .hero-bg.in{opacity:.55}
-.hero-b::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 55% at 50% calc(50% - var(--sq) / 2),rgba(9,9,11,.5),rgba(9,9,11,.92) 100%),linear-gradient(180deg,rgba(9,9,11,.3),rgba(9,9,11,.2) 50%,var(--bg) calc(100% - var(--sq)))}
+.hero-b::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 55% at 50% calc(50% - var(--sqh) / 2),rgba(9,9,11,.5),rgba(9,9,11,.92) 100%),linear-gradient(180deg,rgba(9,9,11,.3),rgba(9,9,11,.2) 50%,var(--bg) calc(100% - var(--sqh)))}
 .hero-in{position:relative;z-index:1;width:100%;padding:0 16px}
 
-/* the groups' chest logos, running along the bottom edge of the screen: a square tile each, all
+/* the groups' chest logos, running along the bottom edge of the screen: a low tile each, all
    the same size, the logo centred in it (its size in the tile, --w and --h, comes from
    build.py); each opens that group's photos. Every list has half a gap at either end, so the
    copy starts one gap after the first list's last tile and the loop has no seam. */
@@ -19,7 +20,7 @@
 .logos-track{display:flex;width:max-content;animation:ticker 80s linear infinite;will-change:transform}
 .logos ul{display:flex;gap:var(--gap);margin:0;padding:0 calc(var(--gap) / 2);list-style:none}
 .logos li{flex:none}
-.lg{display:flex;align-items:center;justify-content:center;width:var(--sq);height:var(--sq);background:#18181c;box-shadow:inset 0 0 0 1px #26262d;line-height:0;transition:background .25s ease,box-shadow .25s ease}
+.lg{display:flex;align-items:center;justify-content:center;width:var(--sq);height:var(--sqh);background:#18181c;box-shadow:inset 0 0 0 1px #26262d;line-height:0;transition:background .25s ease,box-shadow .25s ease}
 .lg:focus-visible{outline-offset:-6px}
 .lg img{width:calc(var(--sq) * var(--w));height:calc(var(--sq) * var(--h));max-width:none;opacity:0;transition:opacity .4s ease,transform .25s ease}
 .lg img.in{opacity:1}
