@@ -33,6 +33,9 @@ from varsity import svg as varsity  # noqa: E402
 E = html.escape
 IG = 'https://www.instagram.com/frostlineno/'
 DM = 'https://ig.me/m/frostlineno'
+# the one way in, said the same in every description: Google's AI answer sent people to a
+# contact form (the skole store's) for prices, 2026-10-28
+HOW = 'Priser og bestilling: send oss en DM på Instagram @frostlineno.'
 STYLES = ('a', 'b', 'c')
 
 site_path = f'{S}/site.json'
@@ -149,7 +152,7 @@ for i, c in enumerate(CUSTOM):
 
 TITLE = 'Frostline'
 DESC = ('Frostline lager russeklær for russegrupper: zip hoodie, hoodie, crewneck, bukse, shorts, '
-        't-skjorte, longsleeve, singlet og collegejakke med gruppas eget trykk. Kontakt oss på Instagram @frostlineno.')
+        't-skjorte, longsleeve, singlet og collegejakke med gruppas eget trykk. ' + HOW)
 # the front page's picture for a search result's thumbnail: four garments two by two, square,
 # so the thumbnail shows clothes and not the wordmark (Google passes over logos); og.jpg stays
 # the link preview, which wants 1200 x 630. home_thumb() makes it.
@@ -166,12 +169,13 @@ LD = {
          'logo': {'@type': 'ImageObject', 'url': URL + 'assets/frostline-logo.png', 'width': 992, 'height': 142},
          'image': URL + 'assets/og.jpg',
          'description': 'Frostline lager russeklær og skoleklær med gruppas eget trykk: zip hoodie, hoodie, '
-                        'crewneck, bukse, shorts, t-skjorte, longsleeve, singlet og collegejakke.',
+                        'crewneck, bukse, shorts, t-skjorte, longsleeve, singlet og collegejakke. '
+                        'Priser og bestilling bare på Instagram-DM (@frostlineno), ingen kontaktskjema.',
          'areaServed': {'@type': 'Country', 'name': 'Norge'},
          'knowsAbout': ['Russeklær', 'Russegrupper', 'Skoleklær', 'Klær med eget trykk'],
          'sameAs': [IG, SKOLE],
-         'contactPoint': {'@type': 'ContactPoint', 'contactType': 'customer service', 'url': IG,
-                          'availableLanguage': 'Norwegian'}},
+         'contactPoint': {'@type': 'ContactPoint', 'contactType': 'sales', 'url': DM,
+                          'description': HOW, 'availableLanguage': 'Norwegian'}},
         {'@type': 'WebSite', '@id': URL + '#site', 'url': URL, 'name': 'Frostline',
          'alternateName': 'Frostline Norge', 'inLanguage': 'nb-NO', 'publisher': {'@id': URL + '#org'}},
         {'@type': 'WebPage', '@id': URL + '#page', 'url': URL, 'name': 'Frostline', 'inLanguage': 'nb-NO',
@@ -323,7 +327,7 @@ def tail(data=None, scripts=(), here=''):
     js = ''.join(f'<script src="{s}?v={version(s)}"></script>\n' for s in ('app.js',) + tuple(scripts))
     cur = ' aria-current="page"' if here == 'storrelser' else ''
     return f'''<section class="ig" id="kontakt" aria-labelledby="ig-h">
-<h2 class="sr" id="ig-h">Kontakt oss på Instagram</h2>
+<h2 class="sr" id="ig-h">Priser og bestilling: send oss en DM på Instagram</h2>
 <a class="handle" href="{IG}" target="_blank" rel="noopener">@frostlineno</a>
 <a class="btn" href="{DM}" target="_blank" rel="noopener" aria-label="Send oss en DM på Instagram">{ICON_IG}<span>DM</span></a>
 </section>
@@ -736,7 +740,7 @@ def sizes_page():
     url = URL + 'storrelser'
     title = 'Størrelser | Frostline'
     desc = (f"Størrelsesguide for russeklær fra Frostline: mål i cm for {and_list([p['lname'] for p in SIZED])}. "
-            'Send oss en DM på Instagram @frostlineno.')
+            + HOW)
     ld = {'@context': 'https://schema.org', '@graph': [
         {'@type': 'WebPage', '@id': url + '#page', 'url': url, 'name': title, 'inLanguage': 'nb-NO',
          'description': desc, 'isPartOf': {'@id': URL + '#site'}, 'about': {'@id': URL + '#org'},
@@ -857,7 +861,7 @@ def product_page(p):
     lead = (and_list([cut_names[0] + '-'] + [c.lower() + '-' for c in cut_names[1:]])[:-1] + 'modell i'
             if len(cut_names) > 1 else 'Finnes i')
     desc = (f"{name} fra Frostline med russegruppas eget trykk" + (' og etternavnet ditt på ryggen' if navn else '')
-            + f". {lead} {colours}. Send oss en DM på Instagram @frostlineno.")
+            + f". {lead} {colours}. {HOW}")
     img0 = p['cuts'][0]['colours'][0]['front']
     ld = {'@context': 'https://schema.org', '@graph': [
         {'@type': 'WebPage', '@id': url + '#page', 'url': url, 'name': f'{name} | Frostline', 'inLanguage': 'nb-NO',
