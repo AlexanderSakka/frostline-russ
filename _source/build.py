@@ -159,13 +159,15 @@ DESC = ('Frostline lager russeklær for russegrupper: zip hoodie, hoodie, crewne
 THUMB = 'assets/thumb.jpg'
 THUMB_OF = ('zip-hoodie-gra-front', 'hoodie-navy-front', 'collegejakke-navy-front', 'bukse-unisex-gra-front')
 # who Frostline is, for search engines only (nothing of this shows on the page): the name
-# people search for, what the company makes, the Instagram account and the school store
-# that belong to it
+# people search for, the company behind it as Brønnøysund has it (Frostec AS, the seller),
+# what it makes, the Instagram account and the school store that belong to it
 LD = {
     '@context': 'https://schema.org',
     '@graph': [
         {'@type': 'Organization', '@id': URL + '#org', 'name': 'Frostline', 'alternateName': 'Frostline Norge',
-         'legalName': 'Frostec AS', 'url': URL,
+         'legalName': 'Frostec AS', 'taxID': '930093777', 'vatID': 'NO930093777MVA', 'url': URL,
+         'address': {'@type': 'PostalAddress', 'streetAddress': 'Øvre Eikervei 83B', 'postalCode': '3048',
+                     'addressLocality': 'Drammen', 'addressCountry': 'NO'},
          'logo': {'@type': 'ImageObject', 'url': URL + 'assets/frostline-logo.png', 'width': 992, 'height': 142},
          'image': URL + 'assets/og.jpg',
          'description': 'Frostline lager russeklær og skoleklær med gruppas eget trykk: zip hoodie, hoodie, '
