@@ -22,6 +22,10 @@ generated, never edit it by hand.
   `#bukse` opens one). Bukse and shorts show both cuts at once: the pair picture with each
   cut labelled, one table with a Herre and a Dame part. The same panel opens in a sheet from
   the Størrelser link on each garment page, and the footer links it. `sizes.css` + `sizes.js`.
+- `personvern.html`: the privacy page (frostlinenorge.no/personvern) for the Meta app behind
+  the Instagram DM sales board (ftmerch-print-workspace `docs/INSTAGRAM-SALES.md`). Written by
+  hand, not by `build.py`; on purpose in no menu, not in `sitemap.xml`, and `noindex`. Meta
+  reads it, so keep it reachable and keep its text true to what the board stores.
 - `style.css` + `app.js`: shared by every style. `v-a.css`, `v-b.css`, `v-c.css`: the three styles.
 - `img/shop/<id>[-<cut>]-<colour>-<front|back>-{600,1200}.webp`: the product photos, cut out of
   their white ground (transparent), and `<first front>-og.jpg` for each page's link preview
