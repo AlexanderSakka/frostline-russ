@@ -3,7 +3,9 @@
 Frostline's showcase for russegrupper: every garment a group can order first (zip hoodie,
 hoodie, crewneck, bukse, shorts, t-skjorte, longsleeve, singlet, collegejakke) as a product
 card that opens the garment's own page, then the custom pieces, then the groups themselves,
-and a size guide at frostlinenorge.no/storrelser (since 2026-09-30, Alexander's ask).
+and a size guide at frostlinenorge.no/storrelser (since 2026-09-30, Alexander's ask; taken off
+the site on 2026-11-09, also his ask: `_source/site.json` `"size_guide": false`, and /storrelser
+now forwards to the front page. Set it to true and rebuild to bring it back).
 No shop, no prices, no email and almost no text on purpose; the only way in is a DM to
 @frostlineno. Until 2026-09-29 it lived at russ.frostlinenorge.no and the skoleklær store had
 frostlinenorge.no; that day they swapped (the store is now skole.frostlinenorge.no), see

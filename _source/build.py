@@ -100,9 +100,12 @@ for p in PRODUCTS:
     p['colours'] = list(dict.fromkeys(c['k'] for cut in p['cuts'] for c in cut['colours']))
 
 # the size guide: per garment its cuts, each a product photo to draw the measuring lines on and
-# a table (sizes.json); a garment missing there (the college jacket) has no size guide
+# a table (sizes.json); a garment missing there (the college jacket) has no size guide.
+# site.json "size_guide": false takes it off the site (Alexander, 2026-11-09): no /storrelser
+# page, no Størrelser link on the garment pages or in the footer; sizes.json stays for a return
+SIZE_GUIDE = site.get('size_guide', True)
 SIZES = json.load(open(f'{S}/sizes.json'))
-SIZE_OF = SIZES['garments']
+SIZE_OF = SIZES['garments'] if SIZE_GUIDE else {}
 SIZED = [p for p in PRODUCTS if p['id'] in SIZE_OF]
 
 # one-off pieces made for a single group (custom.json), photos in img/c/
@@ -328,6 +331,7 @@ def tail(data=None, scripts=(), here=''):
     here: the footer link that is this page."""
     js = ''.join(f'<script src="{s}?v={version(s)}"></script>\n' for s in ('app.js',) + tuple(scripts))
     cur = ' aria-current="page"' if here == 'storrelser' else ''
+    sg = f'<a class="foot-a" href="storrelser"{cur}>Størrelser</a>\n' if SIZE_GUIDE else ''
     return f'''<section class="ig" id="kontakt" aria-labelledby="ig-h">
 <h2 class="sr" id="ig-h">Priser og bestilling: send oss en DM på Instagram</h2>
 <a class="handle" href="{IG}" target="_blank" rel="noopener">@frostlineno</a>
@@ -335,8 +339,7 @@ def tail(data=None, scripts=(), here=''):
 </section>
 </main>
 <footer class="foot">
-<a class="foot-a" href="storrelser"{cur}>Størrelser</a>
-<img src="assets/frostline-logo-white.png" alt="" width="992" height="142" loading="lazy">
+{sg}<img src="assets/frostline-logo-white.png" alt="" width="992" height="142" loading="lazy">
 </footer>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Bildevisning">
 <button class="lb-close" type="button" aria-label="Lukk">&times;</button>
@@ -977,9 +980,28 @@ live = page(site['live'])
 open(f'{SITE}/index.html', 'w').write(live)
 # every garment's own page (the cards of style b open them), and the size guide
 pages = {p['id']: product_page(p) for p in PRODUCTS}
-pages['storrelser'] = sizes_page()
+if SIZE_GUIDE:
+    pages['storrelser'] = sizes_page()
 for pid, h in pages.items():
     open(f'{SITE}/{pid}.html', 'w').write(h)
+if not SIZE_GUIDE:
+    # links to the size guide are out there (and in search): send them to the front page, not
+    # on to the school store through 404.html
+    open(f'{SITE}/storrelser.html', 'w').write(f'''<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Frostline</title>
+<link rel="canonical" href="{E(URL)}">
+<meta http-equiv="refresh" content="0; url=/">
+</head>
+<body style="margin:0;padding:32px 16px;background:#09090b;font:600 16px/1.5 system-ui,sans-serif">
+<a href="/" style="color:#fff">{E(URL.split('/')[2])}</a>
+</body>
+</html>
+''')
 
 today = datetime.date.today().isoformat()
 
