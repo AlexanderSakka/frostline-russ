@@ -17,9 +17,11 @@
   "the waists and on the dame inseam, so those stayed. Bukse herre inseam is as measured on 2026-11-12 (70, 71, 74, 76; S evened to 72,",
   "XL and XXL on the same 2 cm step): 2 cm shorter than the lengthened factory chart, so the +2 cm leg did not show on the men's pants.",
   "The dame 2XL waist measured 50 on one garment against 46 here; left at 46 until a second one says the same.",
-  "The pants have ribbed side panels and hand measurements go rib to rib, leaving them out, so the hip of both cuts and the women's leg",
-  "opening stay at the factory spec (the 2026-11-12 ones came out 2.5 to 5 cm under again); the women's XXL carries the spec's own step",
-  "on from XL (hip +2.5, leg opening +1).",
+  "Bukse dame hip (2026-11-26, Alexander: \"use the kacpers numbers\"): Kacper's 2026-11-12 measurements, XS 44, S 47, M 48, L 49, 2XL 56;",
+  "XL is not measured and sits halfway between L and 2XL (52.5). A second measurement that day read XS 44, S 46.6, M 47.5, L 51, and both",
+  "are about 3 cm under the factory spec (46.5 / 49 / 51.5 / 54 / 56.5 / 59), so the 12 Nov reading was the true width, not rib to rib.",
+  "The men's hip and the women's leg opening stay at the factory spec (hand measurements came out 2.5 to 5 cm under; not settled); the",
+  "women's XXL leg opening carries the spec's own step on from XL (+1).",
   "Women's shorts leg opening is the one girth the factory gives the whole way round; halved here, to one decimal.",
   "T-skjorte, longsleeve and singlet: Stanley/Stella's own product sheets, size for size (Alexander, 2026-11-13: \"as per the stanley",
   "stella\"; nothing is pressed a size down since 2026-10-23/29): t-skjorte Creator 2.0 STTU169, longsleeve Creator 2.0 Long Sleeve",
@@ -56,7 +58,7 @@
     {"k": "D", "m": "benapning", "values": [17, 18, 19, 20, 21, 22], "mark": [[362, 1144], [550, 1144]]}]},
    {"cut": "dame", "img": "bukse-dame-gra-front", "sizes": ["XS", "S", "M", "L", "XL", "XXL"], "rows": [
     {"k": "A", "m": "liv", "values": [33.5, 36, 38.5, 41, 43.5, 46], "mark": [[414, 60], [785, 60]]},
-    {"k": "B", "m": "hofte", "values": [46.5, 49, 51.5, 54, 56.5, 59], "mark": [[373, 300], [826, 300]]},
+    {"k": "B", "m": "hofte", "values": [44, 47, 48, 49, 52.5, 56], "mark": [[373, 300], [826, 300]]},
     {"k": "C", "m": "innerben", "values": [72, 74, 76, 78, 80, 82], "mark": [[634, 382], [668, 1144]]},
     {"k": "D", "m": "benapning", "values": [19.5, 20.5, 21.5, 22.5, 23.5, 24.5], "mark": [[366, 1144], [565, 1144]]}]}],
   "shorts": [
