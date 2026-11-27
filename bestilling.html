@@ -379,6 +379,15 @@ input[type="text"], input[type="tel"], textarea { text-align: center; }
     </div>
     <p class="passord-linje" id="cr-passord-linje">Passord: <b id="cr-passord"></b></p>
   </div>
+  <div class="del-boks" id="rekkefolge-boks">
+    <div class="etikett">Rekkefølge på navnelisten</div>
+    <p class="hint" style="margin:0">Skriv navnene i den rekkefølgen dere vil ha dem på navnelisten, ett navn per linje. Navn som ikke står her, kommer til slutt i alfabetisk rekkefølge.</p>
+    <textarea id="navnerekkefolge" rows="7" style="text-align:left" placeholder="NORDMANN&#10;HANSEN&#10;OLSEN" aria-label="Rekkefølge på navnelisten"></textarea>
+    <div class="del-rad">
+      <button type="button" class="knapp" id="fyll-rekkefolge">Hent navnene fra bestillingene</button>
+      <button type="button" class="knapp hoved" id="lagre-rekkefolge">Lagre rekkefølgen</button>
+    </div>
+  </div>
   <div class="statusrad">
     <div><span class="pill" id="cr-status"></span> <span id="cr-frist" class="hint"></span></div>
     <div class="knapperad">
@@ -522,7 +531,8 @@ input[type="text"], input[type="tel"], textarea { text-align: center; }
       cr: (g, k) => kall('hentCrData', g, k),
       betalt: (g, k, id, b) => kall('settBetalt', g, k, id, b),
       slett: (g, k, id) => kall('slettBestilling', g, k, id),
-      apen: (g, k, a) => kall('settApen', g, k, a)
+      apen: (g, k, a) => kall('settApen', g, k, a),
+      rekkefolge: (g, k, t) => kall('settNavnerekkefolge', g, k, t)
     };
   }
 
@@ -577,6 +587,7 @@ input[type="text"], input[type="tel"], textarea { text-align: center; }
 
     const pk = {}; alle.forEach(p => { pk[p.key] = p; });
     const frist = new Date(Date.now() + 14 * 864e5); frist.setHours(0, 0, 0, 0);
+    let demoRekkefolge = '';
     const lagGruppe = kjonn => ({ id: 'bavaria', navn: kjonn === 'dame' ? 'Eksempelgruppe' : 'Bavaria', kjonn, crNavn: 'Ingrid Moe', crMobil: '98765432', apen: true, fristUte: false, frist: frist.toISOString() });
     const produkterFor = kjonn => alle.filter(p => !p.visFor || p.visFor === kjonn);
     const l = (key, storrelse, egennavn, antall) => { const p = pk[key]; return { produkt: p.produkt, variant: p.variant, storrelse, egennavn: egennavn || '', antall: antall || 1, pris: p.pris, sum: p.pris * (antall || 1) }; };
@@ -615,10 +626,11 @@ input[type="text"], input[type="tel"], textarea { text-align: center; }
         ordre.push(ny); lagre();
         return vent({ ok: true, ordreId: ny.ordreId, erstattet: tidligere.length > 0, gruppe: lagGruppe(demoKjonn()) });
       },
-      cr: () => vent({ ok: true, gruppe: lagGruppe(demoKjonn()), apenFlagg: true, deltakerlenke: 'https://frostlinenorge.no/bestilling?g=3f9a1c7e02bd', passord: DEMO_PASSORD, produkter: produkterFor(demoKjonn()), bestillinger: ordre.filter(x => x.status === 'AKTIV') }),
+      cr: () => vent({ ok: true, navnerekkefolge: demoRekkefolge, gruppe: lagGruppe(demoKjonn()), apenFlagg: true, deltakerlenke: 'https://frostlinenorge.no/bestilling?g=3f9a1c7e02bd', passord: DEMO_PASSORD, produkter: produkterFor(demoKjonn()), bestillinger: ordre.filter(x => x.status === 'AKTIV') }),
       betalt: (g, k, id, b) => { const x = ordre.find(y => y.ordreId === id); if (x) x.betalt = b; lagre(); return vent({ ok: true }); },
       slett: (g, k, id) => { const x = ordre.find(y => y.ordreId === id); if (x) x.status = 'SLETTET'; lagre(); return vent({ ok: true }); },
       apen: () => vent({ ok: true }),
+      rekkefolge: (g, k, t) => { demoRekkefolge = String(t || ''); return vent({ ok: true, navnerekkefolge: demoRekkefolge }); },
     };
   }
 
@@ -995,6 +1007,7 @@ input[type="text"], input[type="tel"], textarea { text-align: center; }
     const d = S.cr, g = d.gruppe, b = d.bestillinger;
     $('deltakerlenke').value = d.deltakerlenke || '(lenken vises når siden er publisert)';
     $('cr-passord').textContent = d.passord || '';
+    if (document.activeElement !== $('navnerekkefolge') && !S.rekkefolgeEndret) $('navnerekkefolge').value = d.navnerekkefolge || '';
     $('cr-passord-linje').hidden = !d.passord;
     const st = $('cr-status');
     st.textContent = g.apen ? 'Åpen for bestilling' : (g.fristUte ? 'Fristen er ute' : 'Stengt');
@@ -1159,6 +1172,32 @@ input[type="text"], input[type="tel"], textarea { text-align: center; }
       )) : el('tr', null, el('td', { colspan: '6', class: 'null', text: 'Ingen egennavn ennå.' })))
     );
   }
+
+  // Rekkefølge på navnelisten (lagres i arket, brukes i bestillingsskjemaet).
+  $('navnerekkefolge').addEventListener('input', () => { S.rekkefolgeEndret = true; });
+  $('fyll-rekkefolge').addEventListener('click', () => {
+    const felt = $('navnerekkefolge');
+    const har = felt.value.split('\n').map(x => x.trim()).filter(Boolean);
+    const kjent = new Set(har.map(x => x.toLowerCase()));
+    const perPerson = new Map();
+    S.cr.bestillinger.forEach(b => { const l = b.linjer.find(x => x.egennavn); if (l && !perPerson.has(b.ordreId)) perPerson.set(b.ordreId, l.egennavn); });
+    const nye = [...new Set(perPerson.values())].filter(n => !kjent.has(n.toLowerCase())).sort((a, c) => a.localeCompare(c, 'nb'));
+    if (!nye.length) { toast(har.length ? 'Alle navnene står allerede i listen.' : 'Ingen har bestilt med navn ennå.'); return; }
+    felt.value = har.concat(nye).join('\n');
+    S.rekkefolgeEndret = true;
+    toast(nye.length + (nye.length === 1 ? ' navn' : ' navn') + ' lagt til. Flytt dem i ønsket rekkefølge og trykk Lagre.');
+  });
+  $('lagre-rekkefolge').addEventListener('click', async e => {
+    const k = e.currentTarget; k.disabled = true;
+    try {
+      const svar = await api.rekkefolge(S.gruppeId, S.kode, $('navnerekkefolge').value);
+      S.cr.navnerekkefolge = svar.navnerekkefolge;
+      $('navnerekkefolge').value = svar.navnerekkefolge;
+      S.rekkefolgeEndret = false;
+      toast('Rekkefølgen er lagret.');
+    } catch (err) { toast('Kunne ikke lagre: ' + err.message); }
+    k.disabled = false;
+  });
 
   $('kopier-navn').addEventListener('click', () => {
     const tekst = [['Plagg', 'Variant', 'Str.', 'Egennavn', 'Antall', 'Bestilt av'].join('\t')]
