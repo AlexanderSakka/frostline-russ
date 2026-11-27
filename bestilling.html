@@ -675,6 +675,8 @@ input[type="text"], input[type="tel"], textarea { text-align: center; }
     if (!nyttPassord) S.passord = S.passord || lager.les(PW_NOKKEL()) || '';
     visKun('laster');
     let svar;
+    // Bildene hentes samtidig med plaggene, ikke etterpå.
+    if (!api.demo && api.bilder && S.passord) S.bilderLover = api.bilder(S.gruppeId, S.passord).catch(() => null);
     try { svar = await api.side(S.gruppeId, S.passord); } catch (e) { visFeil('Kunne ikke laste siden: ' + e.message); return; }
     if (svar.krevPassord) {
       lager.slett(PW_NOKKEL());
@@ -727,7 +729,9 @@ input[type="text"], input[type="tel"], textarea { text-align: center; }
       api.bilde(S.gruppeId, ref, S.passord).then(url => { S.bilder[ref] = url || ''; vis(ref); }).catch(() => { S.bilder[ref] = ''; });
     });
     if (api.demo || !api.bilder) { enkeltvis(mangler); return; }
-    api.bilder(S.gruppeId, S.passord).then(alle => {
+    const lover = S.bilderLover || api.bilder(S.gruppeId, S.passord);
+    S.bilderLover = null;
+    lover.then(alle => {
       if (!alle || typeof alle !== 'object') throw new Error('ingen bilder');
       mangler.forEach(ref => { S.bilder[ref] = alle[ref] || ''; vis(ref); });
     }).catch(() => enkeltvis(mangler));
